@@ -1,0 +1,168 @@
+@use '../../styles/global' as *;
+
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  background: $surface;
+  border-right: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: $transition-slow;
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 20px;
+    border-bottom: 1px solid $border;
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: $primary;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .logo-name {
+      font-size: 17px;
+      font-weight: 700;
+      span:first-child { color: $text-primary; }
+      span:last-child { color: $primary; }
+    }
+  }
+
+  &__nav {
+    flex: 1;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: $radius-md;
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-secondary;
+    transition: $transition;
+    cursor: pointer;
+    text-decoration: none;
+
+    .nav-icon { 
+      width: 18px; 
+      height: 18px; 
+      color: $text-muted; 
+      transition: $transition; 
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: $surface-hover;
+      color: $primary;
+      .nav-icon { color: $primary; }
+    }
+
+    &.active {
+      background: $primary-light;
+      color: $primary;
+      font-weight: 600;
+      .nav-icon { color: $primary; }
+    }
+  }
+
+  &__user {
+    padding: 16px 12px;
+    border-top: 1px solid $border;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: $primary-light;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: $primary;
+      flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: $radius-full;
+      }
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+
+      .user-email {
+        font-size: 12px;
+        font-weight: 600;
+        color: $text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .user-role {
+        font-size: 11px;
+        color: $text-muted;
+        text-transform: capitalize;
+      }
+    }
+  }
+
+  &__signout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: $radius-md;
+    font-size: 14px;
+    font-weight: 500;
+    color: $text-secondary;
+    transition: $transition;
+    cursor: pointer;
+    margin: 0 12px 12px;
+    text-decoration: none;
+
+    &:hover {
+      background: $danger-light;
+      color: $danger;
+      svg { color: $danger; }
+    }
+
+    svg { width: 18px; height: 18px; color: $text-muted; transition: $transition; }
+  }
+}
+
+.main-content {
+  margin-left: $sidebar-width;
+  flex: 1;
+  min-height: 100vh;
+  padding: 32px 36px;
+  background: $surface-alt;
+}

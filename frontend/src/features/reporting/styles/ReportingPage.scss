@@ -1,0 +1,219 @@
+@use '../../../styles/global' as *;
+
+.reporting {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+
+    h1 { font-size: 1.75rem; font-weight: 800; color: $text-primary; }
+    p { font-size: 14px; color: $text-secondary; margin-top: 4px; }
+  }
+
+  &__table {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead {
+      background: $surface-alt;
+      border-bottom: 1px solid $border;
+    }
+
+    th {
+      padding: 13px 24px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: $text-muted;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 15px 24px;
+      font-size: 14px;
+      color: $text-primary;
+      border-bottom: 1px solid $border;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: $transition; &:hover { background: $surface-hover; } }
+
+    .view-link {
+      color: $primary;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  &__empty {
+    padding: 60px;
+    text-align: center;
+    color: $text-muted;
+    font-size: 14px;
+  }
+}
+
+.btn-create-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  background: $primary;
+  color: white;
+  border-radius: $radius-md;
+  font-size: 14px;
+  font-weight: 600;
+  transition: $transition;
+  &:hover { background: $primary-dark; box-shadow: $shadow-md; transform: translateY(-1px); }
+}
+
+// Report modal
+.report-modal {
+  background: $surface;
+  border-radius: $radius-xl;
+  padding: 32px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: $shadow-lg;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    h2 { font-size: 1.2rem; font-weight: 800; color: $text-primary; }
+    button { color: $text-muted; transition: $transition; &:hover { color: $danger; } }
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: $text-secondary;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid $border;
+      border-radius: $radius-md;
+      font-size: 14px;
+      color: $text-primary;
+      background: $surface;
+      transition: $transition;
+      font-family: inherit;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba(10, 191, 142, 0.1);
+        outline: none;
+      }
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+
+    .btn-cancel {
+      padding: 10px 20px;
+      border: 1.5px solid $border;
+      border-radius: $radius-md;
+      font-size: 14px;
+      font-weight: 600;
+      color: $text-secondary;
+      transition: $transition;
+      &:hover { background: $surface-alt; }
+    }
+
+    .btn-submit {
+      padding: 10px 24px;
+      background: $primary;
+      color: white;
+      border-radius: $radius-md;
+      font-size: 14px;
+      font-weight: 700;
+      transition: $transition;
+      &:hover { background: $primary-dark; }
+      &:disabled { opacity: 0.7; cursor: not-allowed; }
+    }
+  }
+}
+
+// Report detail page
+.report-detail {
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: $text-secondary;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    cursor: pointer;
+    transition: $transition;
+    &:hover { color: $primary; }
+  }
+
+  &__card {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    padding: 32px;
+    max-width: 800px;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $text-primary;
+    margin-bottom: 4px;
+  }
+
+  &__meta {
+    color: $text-muted;
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  &__section {
+    margin-bottom: 24px;
+
+    h4 {
+      font-size: 11px;
+      font-weight: 700;
+      color: $text-muted;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 14px;
+      color: $text-primary;
+      line-height: 1.7;
+    }
+  }
+
+  &__divider { border: none; border-top: 1px solid $border; margin: 24px 0; }
+}

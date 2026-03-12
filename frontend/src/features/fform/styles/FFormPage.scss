@@ -1,0 +1,103 @@
+@use '../../../styles/global' as *;
+
+.fform-page {
+  max-width: 760px;
+
+  &__header {
+    margin-bottom: 28px;
+    h1 { font-size: 1.75rem; font-weight: 800; color: $text-primary; }
+    p { font-size: 14px; color: $text-secondary; margin-top: 4px; }
+  }
+
+  &__card {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    padding: 28px;
+    margin-bottom: 20px;
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: $text-primary;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid $border;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: $text-secondary;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+
+      .required { color: $danger; margin-left: 2px; }
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid $border;
+      border-radius: $radius-md;
+      font-size: 14px;
+      color: $text-primary;
+      background: $surface;
+      font-family: inherit;
+      transition: $transition;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba(10, 191, 142, 0.1);
+        outline: none;
+      }
+      &::placeholder { color: $text-muted; }
+    }
+
+    textarea { resize: vertical; min-height: 90px; }
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+
+    .btn-clear {
+      padding: 11px 24px;
+      border: 1.5px solid $border;
+      border-radius: $radius-md;
+      font-size: 14px;
+      font-weight: 600;
+      color: $text-secondary;
+      transition: $transition;
+      &:hover { background: $surface-alt; }
+    }
+
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      background: $primary;
+      color: white;
+      border-radius: $radius-md;
+      font-size: 14px;
+      font-weight: 700;
+      transition: $transition;
+      &:hover { background: $primary-dark; box-shadow: $shadow-md; }
+      &:disabled { opacity: 0.7; cursor: not-allowed; }
+    }
+  }
+}

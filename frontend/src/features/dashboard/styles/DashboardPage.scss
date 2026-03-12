@@ -1,0 +1,235 @@
+@use '../../../styles/global' as *;
+
+.dashboard {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: $text-primary;
+    }
+    p {
+      color: $text-secondary;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  }
+
+  &__date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-full;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $text-secondary;
+    svg { color: $primary; }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  &__stat-card {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    padding: 22px;
+    transition: $transition;
+
+    &:hover {
+      box-shadow: $shadow-md;
+      transform: translateY(-2px);
+    }
+
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      span {
+        font-size: 13px;
+        font-weight: 500;
+        color: $text-secondary;
+      }
+
+      .stat-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: $radius-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &--green { background: $primary-light; color: $primary; }
+        &--blue { background: #eff6ff; color: #3b82f6; }
+        &--yellow { background: $warning-light; color: $warning; }
+        &--red { background: $danger-light; color: $danger; }
+      }
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: $text-primary;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: $text-muted;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 0.7fr;
+    gap: 20px;
+  }
+
+  &__card {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+
+    &-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid $border;
+
+      h3 {
+        font-size: 15px;
+        font-weight: 700;
+        color: $text-primary;
+      }
+
+      a {
+        font-size: 13px;
+        font-weight: 600;
+        color: $primary;
+      }
+    }
+  }
+
+  &__patient-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    border-bottom: 1px solid $border;
+    transition: $transition;
+    cursor: pointer;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: $surface-hover; }
+
+    .patient-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: $primary;
+      background: $primary-light;
+      flex-shrink: 0;
+      overflow: hidden;
+
+      img { width: 100%; height: 100%; object-fit: cover; border-radius: $radius-full; }
+    }
+
+    .patient-info {
+      flex: 1;
+      .name {
+        font-size: 14px;
+        font-weight: 600;
+        color: $text-primary;
+      }
+      .meta {
+        font-size: 12px;
+        color: $text-muted;
+        margin-top: 1px;
+      }
+    }
+
+    .patient-phone {
+      font-size: 13px;
+      color: $text-secondary;
+      font-weight: 500;
+    }
+  }
+
+  &__visit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid $border;
+    transition: $transition;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: $surface-hover; }
+    &.overdue { background: rgba($danger, 0.02); }
+
+    .visit-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+
+      &--overdue { background: $danger-light; color: $danger; }
+      &--active { background: $primary-light; color: $primary; }
+    }
+
+    .visit-info {
+      flex: 1;
+      .name {
+        font-size: 14px;
+        font-weight: 600;
+        color: $text-primary;
+      }
+      .purpose {
+        font-size: 12px;
+        color: $text-muted;
+        margin-top: 1px;
+      }
+    }
+
+    .visit-right {
+      text-align: right;
+      .date {
+        font-size: 12px;
+        color: $text-secondary;
+      }
+    }
+  }
+
+  &__empty {
+    padding: 40px;
+    text-align: center;
+    color: $text-muted;
+    font-size: 14px;
+  }
+}

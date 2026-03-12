@@ -1,0 +1,146 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    
+    &-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      .sidebar-icon svg { width: 18px; height: 18px; }
+    }
+    
+    &-text {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--text-primary);
+      strong { color: var(--primary); font-weight: 700; }
+    }
+  }
+  
+  &__nav {
+    flex: 1;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all var(--transition);
+    
+    .sidebar-icon svg { width: 18px; height: 18px; }
+    
+    &:hover { background: var(--bg); color: var(--text-primary); }
+    
+    &--active {
+      background: var(--primary);
+      color: white;
+      &:hover { background: var(--primary-dark); color: white; }
+    }
+  }
+  
+  &__footer {
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    
+    &-avatar {
+      width: 34px;
+      height: 34px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    &-email { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+    &-role { font-size: 11px; color: var(--text-muted); }
+  }
+  
+  &__logout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition);
+    width: 100%;
+    
+    .sidebar-icon svg { width: 16px; height: 16px; }
+    &:hover { background: var(--danger-light); color: var(--danger); }
+  }
+}
+
+.sidebar__role-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+  
+  &--admin { background: #FEF3C7; color: #D97706; }
+  &--owner { background: #EDE9FE; color: #7C3AED; }
+}
+
+.sidebar__clinic-info {
+  padding: 10px 16px;
+  background: var(--primary-50);
+  border-bottom: 1px solid var(--border);
+  
+  &-name { font-size: 12px; font-weight: 600; color: var(--primary-dark); }
+  &-plan { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 1px; }
+}
+
+.sidebar__clinic-name { font-size: 12px; font-weight: 600; color: var(--primary-dark); }
+.sidebar__clinic-plan { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; }
+.sidebar__user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.sidebar__link-icon { font-size: 15px; width: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

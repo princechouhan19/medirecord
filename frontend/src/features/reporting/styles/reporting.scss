@@ -1,0 +1,15 @@
+.reporting-page { max-width: 1200px; }
+
+.btn--sm { padding: 6px 14px; font-size: 13px; }
+.btn--ghost { color: var(--primary); &:hover { background: var(--primary-light); } }
+
+.report-view {
+  &__body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  &__row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    span { font-size: 14px; color: var(--text-primary); }
+  }
+}

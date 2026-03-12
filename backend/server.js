@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 MediTracker Server running on port ${PORT}`);
+    console.log(`🚀 MediRecord Server running on port ${PORT}`);
     
     // Start keep-alive ping if RENDER_EXTERNAL_URL is set
     if (process.env.RENDER_EXTERNAL_URL) {

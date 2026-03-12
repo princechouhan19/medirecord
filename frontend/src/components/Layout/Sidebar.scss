@@ -17,23 +17,16 @@
     padding: 24px 20px;
     border-bottom: 1px solid var(--border);
     
-    &-icon {
-      width: 36px;
-      height: 36px;
-      background: var(--primary);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      .sidebar-icon svg { width: 18px; height: 18px; }
+    &-img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
     }
-    
-    &-text {
-      font-family: var(--font-display);
-      font-size: 18px;
-      color: var(--text-primary);
-      strong { color: var(--primary); font-weight: 700; }
+
+    .sidebar__role-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
   }
   

@@ -44,16 +44,13 @@ export default function Sidebar({ role }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
-        <div className="sidebar__logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="18" height="18">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-        </div>
-        <div>
-          <span className="sidebar__logo-text">Medi<strong>Record</strong></span>
-          {role === 'superadmin' && <div className="sidebar__role-badge sidebar__role-badge--admin">ADMIN</div>}
-          {role === 'clinic_owner' && <div className="sidebar__role-badge sidebar__role-badge--owner">OWNER</div>}
-        </div>
+        <img src="/logo.png" alt="MediRecord" className="sidebar__logo-img" />
+        {(role === 'superadmin' || role === 'clinic_owner') && (
+          <div className="sidebar__role-container">
+            {role === 'superadmin' && <div className="sidebar__role-badge sidebar__role-badge--admin">ADMIN</div>}
+            {role === 'clinic_owner' && <div className="sidebar__role-badge sidebar__role-badge--owner">OWNER</div>}
+          </div>
+        )}
       </div>
 
       {role === 'clinic_owner' && user?.clinic && (

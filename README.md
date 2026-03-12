@@ -1,4 +1,8 @@
-# MediRecord — Smart EMR & Clinic Management System
+<div align="center">
+  <img src="frontend/public/logo.png" alt="MediRecord Logo" width="300" />
+
+  # MediRecord — Smart EMR & Clinic Management System
+</div>
 
 MediRecord is a comprehensive, full-stack Electronic Medical Record (EMR) solution designed for clinics and healthcare providers. It provides a seamless interface for patient registration, diagnostic reporting, visit tracking, and essential clinical documentation.
 

@@ -108,23 +108,13 @@
 .auth-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
+  justify-content: center;
+  margin-bottom: 4px; 
   
-  &__icon {
-    width: 36px;
-    height: 36px;
-    background: var(--primary);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  span {
-    font-family: var(--font-display);
-    font-size: 20px;
-    strong { color: var(--primary); }
+  img {
+    height: 144px;
+    width: auto;
+    object-fit: contain;
   }
 }
 

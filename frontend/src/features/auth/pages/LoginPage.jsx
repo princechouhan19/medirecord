@@ -75,12 +75,7 @@ export default function LoginPage() {
         {/* Right Panel */}
         <div className="auth-card__right" ref={rightRef}>
           <div className="auth-logo">
-            <div className="auth-logo__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="20" height="20">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </div>
-            <span>Medi<strong>Record</strong></span>
+            <img src="/logo.png" alt="MediRecord Logo" />
           </div>
 
           <h2>Sign in</h2>

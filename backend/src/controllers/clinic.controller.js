@@ -31,7 +31,7 @@ exports.getOne = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { ownerEmail, ownerName, ownerPassword, ownerPhone, ...clinicData } = req.body;
+    const { ownerEmail, ownerName, ownerPassword, ownerPhone, plan, durationMonths, ...clinicData } = req.body;
 
     // Create owner user
     const existingUser = await User.findOne({ email: ownerEmail });
@@ -45,7 +45,23 @@ exports.create = async (req, res, next) => {
       role: 'clinic_owner',
     });
 
-    const clinic = await Clinic.create({ ...clinicData, owner: owner._id });
+    // Calculate subscription end date
+    const start = new Date();
+    const end = new Date();
+    const months = parseInt(durationMonths) || 1;
+    end.setMonth(start.getMonth() + months);
+
+    const clinic = await Clinic.create({ 
+      ...clinicData, 
+      owner: owner._id,
+      subscription: {
+        plan: plan || 'free',
+        durationMonths: months,
+        startDate: start,
+        endDate: end,
+        status: 'active'
+      }
+    });
 
     // Link owner to clinic
     owner.clinic = clinic._id;
@@ -58,7 +74,26 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const clinic = await Clinic.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('owner', 'name email');
+    const { subscription, ...otherUpdates } = req.body;
+    const updateData = { ...otherUpdates };
+
+    // If subscription info is being updated, handle date recalculation if duration changed
+    if (subscription) {
+      const clinic = await Clinic.findById(req.params.id);
+      if (!clinic) return res.status(404).json({ error: 'Clinic not found' });
+      
+      const newSub = { ...clinic.subscription.toObject(), ...subscription };
+      
+      // If duration changed, recalculate end date from now
+      if (subscription.durationMonths && subscription.durationMonths !== clinic.subscription.durationMonths) {
+        const end = new Date();
+        end.setMonth(end.getMonth() + parseInt(subscription.durationMonths));
+        newSub.endDate = end;
+      }
+      updateData.subscription = newSub;
+    }
+
+    const clinic = await Clinic.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate('owner', 'name email');
     if (!clinic) return res.status(404).json({ error: 'Clinic not found' });
     res.json({ clinic });
   } catch (err) { next(err); }
@@ -100,6 +135,43 @@ exports.getMyClinic = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.updateMyClinic = async (req, res, next) => {
+  try {
+    const { name, address, city, state, phone, email, licenseNumber, specialization, logo, logoFileId } = req.body;
+    const clinic = await Clinic.findById(req.user.clinic);
+    if (!clinic) return res.status(404).json({ error: 'Clinic not found' });
+
+    if (logoFileId && clinic.logoFileId && logoFileId !== clinic.logoFileId) {
+      try {
+        const imagekit = require('../config/imagekit');
+        await imagekit.deleteFile(clinic.logoFileId);
+      } catch (err) {
+        console.error('Failed to delete old clinic logo', err);
+      }
+    }
+
+    const updates = {};
+    if (name) updates.name = name;
+    if (address !== undefined) updates.address = address;
+    if (city !== undefined) updates.city = city;
+    if (state !== undefined) updates.state = state;
+    if (phone !== undefined) updates.phone = phone;
+    if (email !== undefined) updates.email = email;
+    if (licenseNumber !== undefined) updates.licenseNumber = licenseNumber;
+    if (specialization !== undefined) updates.specialization = specialization;
+    if (logo !== undefined) updates.logo = logo;
+    if (logoFileId !== undefined) updates.logoFileId = logoFileId;
+
+    const updatedClinic = await Clinic.findByIdAndUpdate(
+      req.user.clinic,
+      { $set: updates },
+      { new: true, runValidators: false }
+    ).populate('owner', 'name email');
+
+    res.json({ clinic: updatedClinic });
+  } catch (err) { next(err); }
+};
+
 exports.getMyStaff = async (req, res, next) => {
   try {
     const staff = await User.find({ clinic: req.user.clinic, role: { $ne: 'superadmin' } })
@@ -118,6 +190,8 @@ exports.addStaff = async (req, res, next) => {
       name, email, password, phone: phone || '',
       role: role || 'staff',
       clinic: req.user.clinic,
+      profileImage: req.body.profileImage || '',
+      profileImageFileId: req.body.profileImageFileId || ''
     });
     res.status(201).json({ staff });
   } catch (err) { next(err); }

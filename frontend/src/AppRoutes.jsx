@@ -3,6 +3,7 @@ import { useAuth } from './features/auth/hooks/useAuth'
 
 import LoginPage from './features/auth/pages/LoginPage'
 import MainLayout from './components/Layout/MainLayout'
+import ProfilePage from './features/profile/pages/ProfilePage'
 
 // Staff/Doctor pages
 import DashboardPage from './features/dashboard/pages/DashboardPage'
@@ -56,6 +57,7 @@ export default function AppRoutes() {
         <Route index element={<AdminDashboardPage />} />
         <Route path="clinics" element={<AdminClinicsPage />} />
         <Route path="users" element={<AdminUsersPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* Clinic Owner routes */}
@@ -67,6 +69,7 @@ export default function AppRoutes() {
         <Route path="tracking" element={<TrackingPage />} />
         <Route path="fforms" element={<FFormPage />} />
         <Route path="settings" element={<ClinicSettingsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* Staff routes */}
@@ -77,6 +80,7 @@ export default function AppRoutes() {
         <Route path="reporting" element={<ReportingPage />} />
         <Route path="tracking" element={<TrackingPage />} />
         <Route path="fform" element={<FFormPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to={token ? homeRedirect() : '/login'} replace />} />

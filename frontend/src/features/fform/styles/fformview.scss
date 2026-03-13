@@ -1,7 +1,7 @@
 .fform-view-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +18,7 @@
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
@@ -30,8 +30,12 @@
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
-  
-  h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+  }
 }
 
 .fform-view-actions {
@@ -41,16 +45,23 @@
 }
 
 .fform-view-close {
-  width: 30px; height: 30px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: white;
   border: 1px solid var(--border);
   font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all var(--transition);
   color: var(--text-muted);
-  &:hover { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+  &:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: var(--danger);
+  }
 }
 
 .fform-view-body {
@@ -62,7 +73,7 @@
 .pdf-wrapper {
   max-width: 100%;
   padding: 32px;
-  
+
   .pdf-header {
     display: flex;
     justify-content: space-between;
@@ -71,16 +82,22 @@
     padding-bottom: 16px;
     margin-bottom: 20px;
   }
-  
+
   .pdf-logo {
     font-size: 22px;
     font-weight: 700;
     color: var(--primary);
-    span { color: var(--text-primary); }
+    span {
+      color: var(--text-primary);
+    }
   }
-  
-  .pdf-form-num { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-  
+
+  .pdf-form-num {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
   .pdf-patient {
     background: var(--bg);
     border-radius: var(--radius-sm);
@@ -89,15 +106,28 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    
+
     &-item {
-      label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 3px; font-weight: 600; }
-      span { font-weight: 600; font-size: 13px; }
+      label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 3px;
+        font-weight: 600;
+      }
+      span {
+        font-weight: 600;
+        font-size: 13px;
+      }
     }
   }
-  
-  .pdf-section { margin-bottom: 20px; }
-  
+
+  .pdf-section {
+    margin-bottom: 20px;
+  }
+
   .pdf-section-title {
     font-size: 11px;
     font-weight: 700;
@@ -108,32 +138,60 @@
     padding-bottom: 6px;
     border-bottom: 1px solid var(--border);
   }
-  
+
   .pdf-field {
     margin-bottom: 10px;
-    label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 3px; }
-    p { font-size: 13px; color: var(--text-primary); line-height: 1.6; white-space: pre-line; }
+    label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: block;
+      margin-bottom: 3px;
+    }
+    p {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      white-space: pre-line;
+    }
   }
-  
-  .pdf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  
+
+  .pdf-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
   .pdf-vitals {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
   }
-  
+
   .pdf-vital {
     background: var(--bg);
     border-radius: var(--radius-sm);
     padding: 10px;
     text-align: center;
     border: 1px solid var(--border);
-    
-    label { font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
-    span { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+
+    label {
+      font-size: 9px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
   }
-  
+
   .pdf-icd {
     display: inline-block;
     background: var(--primary-light);
@@ -144,7 +202,7 @@
     font-weight: 700;
     margin-bottom: 10px;
   }
-  
+
   .pdf-footer {
     border-top: 1px solid var(--border);
     padding-top: 14px;
@@ -153,7 +211,7 @@
     justify-content: space-between;
     align-items: flex-end;
   }
-  
+
   .sig-line {
     border-top: 1px solid var(--text-primary);
     width: 160px;
@@ -161,5 +219,75 @@
     padding-top: 6px;
     font-size: 11px;
     color: var(--text-muted);
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .fform-view-modal {
+    max-height: calc(100vh - 32px);
+  }
+
+  .fform-view-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fform-view-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    button {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  .pdf-wrapper {
+    padding: 16px;
+
+    .pdf-header {
+      flex-direction: column;
+      gap: 16px;
+      .pdf-logo {
+        font-size: 18px;
+      }
+      div[style*="textAlign: right"] {
+        text-align: left !important;
+      }
+    }
+
+    .pdf-patient {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pdf-grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .pdf-vitals {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .pdf-footer {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+
+      div[style*="textAlign: right"] {
+        text-align: left !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-wrapper .pdf-patient {
+    grid-template-columns: 1fr;
+  }
+  .pdf-wrapper .pdf-vitals {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

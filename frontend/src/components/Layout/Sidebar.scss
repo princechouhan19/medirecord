@@ -14,13 +14,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 24px 20px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--border);
     
     &-img {
-      height: 38px;
-      width: auto;
+      width: 100%;
+      height: 52px;
       object-fit: contain;
+      object-position: left center;
     }
 
     .sidebar__role-container {
@@ -128,9 +129,27 @@
   padding: 10px 16px;
   background: var(--primary-50);
   border-bottom: 1px solid var(--border);
+}
+
+.sidebar__subscription {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.sidebar__expiry {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  border-radius: 4px;
   
-  &-name { font-size: 12px; font-weight: 600; color: var(--primary-dark); }
-  &-plan { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; margin-top: 1px; }
+  &--urgent {
+    background: #fee2e2;
+    color: var(--danger);
+  }
 }
 
 .sidebar__clinic-name { font-size: 12px; font-weight: 600; color: var(--primary-dark); }

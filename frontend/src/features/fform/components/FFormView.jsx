@@ -1,12 +1,12 @@
-import { useRef } from "react"
-import "../styles/fformview.scss"
+import { useRef } from "react";
+import "../styles/fformview.scss";
 
 export default function FFormView({ form, onClose }) {
-  const printRef = useRef(null)
+  const printRef = useRef(null);
 
   const handlePrint = () => {
-    const content = printRef.current.innerHTML
-    const w = window.open("", "_blank")
+    const content = printRef.current.innerHTML;
+    const w = window.open("", "_blank");
     w.document.write(`
       <!DOCTYPE html><html><head>
       <title>F-Form ${form.formNumber}</title>
@@ -37,15 +37,20 @@ export default function FFormView({ form, onClose }) {
         @media print { body { -webkit-print-color-adjust: exact; } }
       </style>
       </head><body>${content}</body></html>
-    `)
-    w.document.close()
-    w.focus()
-    setTimeout(() => { w.print(); w.close() }, 500)
-  }
+    `);
+    w.document.close();
+    w.focus();
+    setTimeout(() => {
+      w.print();
+      w.close();
+    }, 500);
+  };
 
   const handleDownload = () => {
-    const content = printRef.current.innerHTML
-    const blob = new Blob([`<!DOCTYPE html><html><head><title>F-Form ${form.formNumber}</title>
+    const content = printRef.current.innerHTML;
+    const blob = new Blob(
+      [
+        `<!DOCTYPE html><html><head><title>F-Form ${form.formNumber}</title>
       <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 32px; max-width: 800px; margin: 0 auto; }
@@ -66,47 +71,92 @@ export default function FFormView({ form, onClose }) {
         .pdf-icd { display: inline-block; background: #E8F9F8; color: #25A89D; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
         .pdf-footer { border-top: 1px solid #E5E7EB; padding-top: 12px; margin-top: 20px; display: flex; justify-content: space-between; font-size: 11px; color: #9CA3AF; }
         .sig-line { border-top: 1px solid #1a1a1a; width: 160px; margin-top: 32px; padding-top: 4px; font-size: 11px; color: #6B7280; }
-      </style></head><body>${content}</body></html>`],
-      { type: "text/html" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `FForm-${form.formNumber}-${form.patient?.name?.replace(/\s+/g, "_")}.html`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+      </style></head><body>${content}</body></html>`,
+      ],
+      { type: "text/html" },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `FForm-${form.formNumber}-${form.patient?.name?.replace(/\s+/g, "_")}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleShare = async () => {
-    const text = `MediRecord F-Form\nForm: ${form.formNumber}\nPatient: ${form.patient?.name}\nDate: ${new Date(form.createdAt).toLocaleDateString("en-IN")}\nDiagnosis: ${form.provisionalDiagnosis || "N/A"}`
+    const text = `MediRecord F-Form\nForm: ${form.formNumber}\nPatient: ${form.patient?.name}\nDate: ${new Date(form.createdAt).toLocaleDateString("en-IN")}\nDiagnosis: ${form.provisionalDiagnosis || "N/A"}`;
     if (navigator.share) {
-      navigator.share({ title: `F-Form ${form.formNumber}`, text })
+      navigator.share({ title: `F-Form ${form.formNumber}`, text });
     } else {
-      await navigator.clipboard.writeText(text)
-      alert("Form summary copied to clipboard!")
+      await navigator.clipboard.writeText(text);
+      alert("Form summary copied to clipboard!");
     }
-  }
+  };
 
-  const val = (v) => v || "—"
+  const val = (v) => v || "—";
 
   return (
-    <div className="fform-view-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div
+      className="fform-view-overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className="fform-view-modal">
         <div className="fform-view-toolbar">
           <h3>F-Form — {form.formNumber}</h3>
           <div className="fform-view-actions">
             <button className="btn btn--outline btn--sm" onClick={handleShare}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="14"
+                height="14"
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
               Share
             </button>
-            <button className="btn btn--outline btn--sm" onClick={handleDownload}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <button
+              className="btn btn--outline btn--sm"
+              onClick={handleDownload}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="14"
+                height="14"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
               Download
             </button>
             <button className="btn btn--primary btn--sm" onClick={handlePrint}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="14"
+                height="14"
+              >
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
               Print
             </button>
-            <button className="fform-view-close" onClick={onClose}>✕</button>
+            <button className="fform-view-close" onClick={onClose}>
+              ✕
+            </button>
           </div>
         </div>
 
@@ -115,13 +165,21 @@ export default function FFormView({ form, onClose }) {
             {/* PDF Header */}
             <div className="pdf-header">
               <div>
-                <div className="pdf-logo">Medi<span>Record</span></div>
+                <div className="pdf-logo">
+                  Medi<span>Record</span>
+                </div>
                 <div className="pdf-form-num">Clinical Findings Form</div>
               </div>
-              <div style={{textAlign: "right"}}>
-                <div style={{fontWeight: 700, fontSize: "16px"}}>{form.formNumber}</div>
-                <div className="pdf-form-num">{form.clinic?.name || "MediRecord Clinic"}</div>
-                <div className="pdf-form-num">Date: {new Date(form.createdAt).toLocaleDateString("en-IN")}</div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontWeight: 700, fontSize: "16px" }}>
+                  {form.formNumber}
+                </div>
+                <div className="pdf-form-num">
+                  {form.clinic?.name || "MediRecord Clinic"}
+                </div>
+                <div className="pdf-form-num">
+                  Date: {new Date(form.createdAt).toLocaleDateString("en-IN")}
+                </div>
               </div>
             </div>
 
@@ -129,10 +187,13 @@ export default function FFormView({ form, onClose }) {
             <div className="pdf-patient">
               {[
                 { label: "Patient Name", value: form.patient?.name },
-                { label: "Age / Gender", value: `${form.patient?.age} yrs / ${form.patient?.gender}` },
+                {
+                  label: "Age / Gender",
+                  value: `${form.patient?.age} yrs / ${form.patient?.gender}`,
+                },
                 { label: "Phone", value: form.patient?.phone },
                 { label: "Doctor", value: form.createdBy?.name || "—" },
-              ].map(i => (
+              ].map((i) => (
                 <div key={i.label} className="pdf-patient-item">
                   <label>{i.label}</label>
                   <span>{i.value || "—"}</span>
@@ -143,19 +204,50 @@ export default function FFormView({ form, onClose }) {
             {/* Chief Complaint */}
             <div className="pdf-section">
               <div className="pdf-section-title">Chief Complaint</div>
-              <div className="pdf-field"><p>{val(form.chiefComplaint)}</p></div>
+              <div className="pdf-field">
+                <p>{val(form.chiefComplaint)}</p>
+              </div>
             </div>
 
             {/* History */}
-            {(form.historyOfPresentIllness || form.pastMedicalHistory || form.familyHistory || form.allergies || form.currentMedications) && (
+            {(form.historyOfPresentIllness ||
+              form.pastMedicalHistory ||
+              form.familyHistory ||
+              form.allergies ||
+              form.currentMedications) && (
               <div className="pdf-section">
                 <div className="pdf-section-title">History</div>
                 <div className="pdf-grid-2">
-                  {form.historyOfPresentIllness && <div className="pdf-field"><label>History of Present Illness</label><p>{form.historyOfPresentIllness}</p></div>}
-                  {form.pastMedicalHistory && <div className="pdf-field"><label>Past Medical History</label><p>{form.pastMedicalHistory}</p></div>}
-                  {form.familyHistory && <div className="pdf-field"><label>Family History</label><p>{form.familyHistory}</p></div>}
-                  {form.allergies && <div className="pdf-field"><label>Allergies</label><p>{form.allergies}</p></div>}
-                  {form.currentMedications && <div className="pdf-field"><label>Current Medications</label><p>{form.currentMedications}</p></div>}
+                  {form.historyOfPresentIllness && (
+                    <div className="pdf-field">
+                      <label>History of Present Illness</label>
+                      <p>{form.historyOfPresentIllness}</p>
+                    </div>
+                  )}
+                  {form.pastMedicalHistory && (
+                    <div className="pdf-field">
+                      <label>Past Medical History</label>
+                      <p>{form.pastMedicalHistory}</p>
+                    </div>
+                  )}
+                  {form.familyHistory && (
+                    <div className="pdf-field">
+                      <label>Family History</label>
+                      <p>{form.familyHistory}</p>
+                    </div>
+                  )}
+                  {form.allergies && (
+                    <div className="pdf-field">
+                      <label>Allergies</label>
+                      <p>{form.allergies}</p>
+                    </div>
+                  )}
+                  {form.currentMedications && (
+                    <div className="pdf-field">
+                      <label>Current Medications</label>
+                      <p>{form.currentMedications}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -172,7 +264,7 @@ export default function FFormView({ form, onClose }) {
                     { key: "weight", label: "Weight" },
                     { key: "height", label: "Height" },
                     { key: "spo2", label: "SpO2" },
-                  ].map(v => (
+                  ].map((v) => (
                     <div key={v.key} className="pdf-vital">
                       <label>{v.label}</label>
                       <span>{form.vitals[v.key] || "—"}</span>
@@ -185,24 +277,70 @@ export default function FFormView({ form, onClose }) {
             {/* Examination & Investigations */}
             {(form.physicalExamination || form.investigations) && (
               <div className="pdf-section">
-                <div className="pdf-section-title">Examination & Investigations</div>
-                {form.physicalExamination && <div className="pdf-field"><label>Physical Examination</label><p>{form.physicalExamination}</p></div>}
-                {form.investigations && <div className="pdf-field"><label>Investigations</label><p>{form.investigations}</p></div>}
+                <div className="pdf-section-title">
+                  Examination & Investigations
+                </div>
+                {form.physicalExamination && (
+                  <div className="pdf-field">
+                    <label>Physical Examination</label>
+                    <p>{form.physicalExamination}</p>
+                  </div>
+                )}
+                {form.investigations && (
+                  <div className="pdf-field">
+                    <label>Investigations</label>
+                    <p>{form.investigations}</p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Diagnosis */}
             <div className="pdf-section">
               <div className="pdf-section-title">Diagnosis & Treatment</div>
-              {form.icdCode && <div className="pdf-icd">ICD-10: {form.icdCode}</div>}
+              {form.icdCode && (
+                <div className="pdf-icd">ICD-10: {form.icdCode}</div>
+              )}
               <div className="pdf-grid-2">
-                {form.provisionalDiagnosis && <div className="pdf-field"><label>Provisional Diagnosis</label><p>{form.provisionalDiagnosis}</p></div>}
-                {form.differentialDiagnosis && <div className="pdf-field"><label>Differential Diagnosis</label><p>{form.differentialDiagnosis}</p></div>}
+                {form.provisionalDiagnosis && (
+                  <div className="pdf-field">
+                    <label>Provisional Diagnosis</label>
+                    <p>{form.provisionalDiagnosis}</p>
+                  </div>
+                )}
+                {form.differentialDiagnosis && (
+                  <div className="pdf-field">
+                    <label>Differential Diagnosis</label>
+                    <p>{form.differentialDiagnosis}</p>
+                  </div>
+                )}
               </div>
-              {form.treatmentPlan && <div className="pdf-field"><label>Treatment Plan</label><p>{form.treatmentPlan}</p></div>}
-              {form.prescriptions && <div className="pdf-field"><label>Prescriptions</label><p style={{whiteSpace: "pre-line"}}>{form.prescriptions}</p></div>}
-              {form.followUpDate && <div className="pdf-field"><label>Follow-up Date</label><p>{new Date(form.followUpDate).toLocaleDateString("en-IN")}</p></div>}
-              {form.doctorNotes && <div className="pdf-field"><label>Doctor Notes</label><p>{form.doctorNotes}</p></div>}
+              {form.treatmentPlan && (
+                <div className="pdf-field">
+                  <label>Treatment Plan</label>
+                  <p>{form.treatmentPlan}</p>
+                </div>
+              )}
+              {form.prescriptions && (
+                <div className="pdf-field">
+                  <label>Prescriptions</label>
+                  <p style={{ whiteSpace: "pre-line" }}>{form.prescriptions}</p>
+                </div>
+              )}
+              {form.followUpDate && (
+                <div className="pdf-field">
+                  <label>Follow-up Date</label>
+                  <p>
+                    {new Date(form.followUpDate).toLocaleDateString("en-IN")}
+                  </p>
+                </div>
+              )}
+              {form.doctorNotes && (
+                <div className="pdf-field">
+                  <label>Doctor Notes</label>
+                  <p>{form.doctorNotes}</p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -210,7 +348,13 @@ export default function FFormView({ form, onClose }) {
               <div>
                 <div className="sig-line">Doctor Signature</div>
               </div>
-              <div style={{textAlign: "right", fontSize: "11px", color: "#9CA3AF"}}>
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: "11px",
+                  color: "#9CA3AF",
+                }}
+              >
                 <div>MediRecord — Smart EMR</div>
                 <div>Generated: {new Date().toLocaleString("en-IN")}</div>
               </div>
@@ -219,5 +363,5 @@ export default function FFormView({ form, onClose }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

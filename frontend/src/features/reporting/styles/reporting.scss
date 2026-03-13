@@ -1,15 +1,113 @@
-.reporting-page { max-width: 1200px; }
+.reporting-page {
+  max-width: 1200px;
+}
 
-.btn--sm { padding: 6px 14px; font-size: 13px; }
-.btn--ghost { color: var(--primary); &:hover { background: var(--primary-light); } }
+.btn--sm {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.btn--ghost {
+  color: var(--primary);
+  &:hover {
+    background: var(--primary-light);
+  }
+}
 
 .report-view {
-  &__body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  &__body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
   &__row {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    span { font-size: 14px; color: var(--text-primary); }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    span {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+  }
+}
+
+.mobile-only-list {
+  display: none;
+}
+.desktop-only-table {
+  display: block;
+}
+
+.patient-card {
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  &__body {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+    margin-bottom: 12px;
+  }
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.patient-row__avatar {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .desktop-only-table {
+    display: none;
+  }
+  .mobile-only-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal {
+    max-width: 90%;
+    margin: 16px;
+  }
+
+  .report-view__body,
+  .modal__form {
+    padding: 16px;
   }
 }

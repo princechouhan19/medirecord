@@ -13,7 +13,13 @@ const clinicSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   logo: { type: String, default: '' },
   logoFileId: { type: String, default: '' },
-  plan: { type: String, enum: ['basic', 'pro', 'enterprise'], default: 'basic' },
+  subscription: {
+    plan: { type: String, enum: ['free', 'pro'], default: 'free' },
+    status: { type: String, enum: ['active', 'expired', 'trial'], default: 'active' },
+    startDate: { type: Date, default: Date.now },
+    endDate: { type: Date },
+    durationMonths: { type: Number, enum: [1, 6, 12], default: 1 }
+  },
   settings: {
     allowStaffRegistration: { type: Boolean, default: true },
     maxPatients: { type: Number, default: 1000 },

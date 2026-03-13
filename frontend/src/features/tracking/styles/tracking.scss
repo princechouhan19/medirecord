@@ -1,4 +1,6 @@
-.tracking-page { max-width: 1200px; }
+.tracking-page {
+  max-width: 1200px;
+}
 
 .tracking-grid {
   display: grid;
@@ -8,39 +10,61 @@
 
 .tracking-card {
   padding: 20px;
-  
-  &--overdue { border-color: rgba(239,68,68,0.25); background: linear-gradient(135deg, #fff, #FFF8F8); }
-  
+
+  &--overdue {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, #fff, #fff8f8);
+  }
+
   &__header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 14px;
-    
-    .tracking-card__info { flex: 1; }
+
+    .tracking-card__info {
+      flex: 1;
+    }
   }
-  
+
   &__next {
     font-size: 13px;
     color: var(--text-secondary);
     margin-bottom: 12px;
-    strong { font-weight: 600; }
+    strong {
+      font-weight: 600;
+    }
   }
-  
+
   &__history {
     background: var(--bg);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
     margin-bottom: 14px;
-    
-    &-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 6px; }
-    &-item { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+
+    &-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    &-item {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
   }
-  
-  &__actions { display: flex; gap: 8px; }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
 }
 
-.text-danger { color: var(--danger) !important; }
+.text-danger {
+  color: var(--danger) !important;
+}
 
 .tracking-empty {
   grid-column: 1 / -1;

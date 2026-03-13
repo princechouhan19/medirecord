@@ -1,4 +1,4 @@
-@use '../../../styles/global' as *;
+@use "../../../styles/global" as *;
 
 .dashboard {
   &__header {
@@ -30,7 +30,9 @@
     font-size: 13px;
     font-weight: 500;
     color: $text-secondary;
-    svg { color: $primary; }
+    svg {
+      color: $primary;
+    }
   }
 
   &__stats {
@@ -72,10 +74,22 @@
         align-items: center;
         justify-content: center;
 
-        &--green { background: $primary-light; color: $primary; }
-        &--blue { background: #eff6ff; color: #3b82f6; }
-        &--yellow { background: $warning-light; color: $warning; }
-        &--red { background: $danger-light; color: $danger; }
+        &--green {
+          background: $primary-light;
+          color: $primary;
+        }
+        &--blue {
+          background: #eff6ff;
+          color: #3b82f6;
+        }
+        &--yellow {
+          background: $warning-light;
+          color: $warning;
+        }
+        &--red {
+          background: $danger-light;
+          color: $danger;
+        }
       }
     }
 
@@ -135,8 +149,12 @@
     transition: $transition;
     cursor: pointer;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: $surface-hover; }
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: $surface-hover;
+    }
 
     .patient-avatar {
       width: 36px;
@@ -152,7 +170,12 @@
       flex-shrink: 0;
       overflow: hidden;
 
-      img { width: 100%; height: 100%; object-fit: cover; border-radius: $radius-full; }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: $radius-full;
+      }
     }
 
     .patient-info {
@@ -184,9 +207,15 @@
     border-bottom: 1px solid $border;
     transition: $transition;
 
-    &:last-child { border-bottom: none; }
-    &:hover { background: $surface-hover; }
-    &.overdue { background: rgba($danger, 0.02); }
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: $surface-hover;
+    }
+    &.overdue {
+      background: rgba($danger, 0.02);
+    }
 
     .visit-avatar {
       width: 36px;
@@ -199,8 +228,18 @@
       font-weight: 700;
       flex-shrink: 0;
 
-      &--overdue { background: $danger-light; color: $danger; }
-      &--active { background: $primary-light; color: $primary; }
+      &--green {
+        background: $primary-light;
+        color: $primary;
+      }
+      &--red {
+        background: $danger-light;
+        color: $danger;
+      }
+      &--yellow {
+        background: $warning-light;
+        color: $warning;
+      }
     }
 
     .visit-info {
@@ -210,26 +249,55 @@
         font-weight: 600;
         color: $text-primary;
       }
-      .purpose {
-        font-size: 12px;
-        color: $text-muted;
-        margin-top: 1px;
-      }
-    }
-
-    .visit-right {
-      text-align: right;
-      .date {
+      .detail {
         font-size: 12px;
         color: $text-secondary;
+        margin-top: 2px;
+      }
+      .date {
+        font-size: 11px;
+        color: $text-muted;
+        margin-top: 4px;
       }
     }
   }
+}
 
-  &__empty {
-    padding: 40px;
-    text-align: center;
-    color: $text-muted;
-    font-size: 14px;
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .dashboard {
+    &__stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard {
+    &__header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    &__stats {
+      grid-template-columns: 1fr;
+    }
+
+    &__patient-row {
+      padding: 12px 16px;
+
+      .patient-phone {
+        display: none; /* Hide phone on very small screens if needed, or stack it */
+      }
+    }
+
+    &__visit-row {
+      padding: 12px 16px;
+    }
   }
 }

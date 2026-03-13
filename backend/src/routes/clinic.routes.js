@@ -14,6 +14,7 @@ router.patch('/:id/toggle', requireRole('superadmin'), c.toggleActive);
 
 // Clinic owner routes
 router.get('/my/clinic', requireRole('clinic_owner'), c.getMyClinic);
+router.patch('/my/clinic', requireRole('clinic_owner'), c.updateMyClinic);
 router.get('/my/staff', requireRole('clinic_owner', 'superadmin'), c.getMyStaff);
 router.post('/my/staff', requireRole('clinic_owner'), c.addStaff);
 router.patch('/my/staff/:userId/toggle', requireRole('clinic_owner'), c.removeStaff);

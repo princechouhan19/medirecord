@@ -56,7 +56,16 @@ export default function Sidebar({ role }) {
       {role === 'clinic_owner' && user?.clinic && (
         <div className="sidebar__clinic-info">
           <div className="sidebar__clinic-name">{user.clinic?.name || 'My Clinic'}</div>
-          <div className="sidebar__clinic-plan">{user.clinic?.plan?.toUpperCase() || 'BASIC'} Plan</div>
+          <div className="sidebar__subscription">
+            <div className="sidebar__clinic-plan">
+              {user.clinic?.subscription?.plan?.toUpperCase() || 'FREE'} Plan
+            </div>
+            {user.clinic?.subscription?.endDate && (
+              <div className={`sidebar__expiry ${new Date(user.clinic.subscription.endDate) - new Date() < 7 * 24 * 60 * 60 * 1000 ? 'sidebar__expiry--urgent' : ''}`}>
+                {Math.max(0, Math.ceil((new Date(user.clinic.subscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days left
+              </div>
+            )}
+          </div>
         </div>
       )}
 

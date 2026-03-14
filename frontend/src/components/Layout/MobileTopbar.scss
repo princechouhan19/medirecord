@@ -1,0 +1,25 @@
+.mobile-topbar {
+  display: none;
+  @media(max-width: 768px) {
+    display: flex; align-items: center; justify-content: space-between;
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 16px; z-index: 200; box-shadow: var(--shadow-sm);
+  }
+  &__menu {
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); color: var(--text-1); transition: background var(--ease);
+    &:hover { background: var(--bg); }
+  }
+  &__brand {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; font-weight: 800; color: var(--text-1);
+    span span { color: var(--teal); }
+  }
+  &__avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--teal-light); color: var(--teal-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px;
+  }
+}

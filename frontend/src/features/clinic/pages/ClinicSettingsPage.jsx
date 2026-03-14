@@ -3,127 +3,223 @@ import { gsap } from 'gsap'
 import { useAuth } from '../../auth/hooks/useAuth'
 import api from '../../../services/api'
 
+const DISCOUNT_ROLES = [
+  { val: 'receptionist', label: 'Receptionist (Staff 1)' },
+  { val: 'lab_handler',  label: 'Lab Handler (Staff 2)' },
+]
+
+function ImageUploadBox({ label, current, onUpload, hint }) {
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview]     = useState(current)
+  const inputRef = useRef(null)
+
+  useEffect(() => setPreview(current), [current])
+
+  const handleFile = async e => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      data.append('folder', '/medirecord/clinic')
+      const r = await api.post('/upload', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      setPreview(r.data.url)
+      onUpload(r.data.url, r.data.fileId)
+    } catch(e) { alert('Upload failed: ' + (e.response?.data?.error || e.message)) }
+    finally { setUploading(false) }
+  }
+
+  return (
+    <div className="img-upload-box">
+      <div className="img-upload-box__preview" onClick={() => inputRef.current?.click()}>
+        {preview
+          ? <img src={preview} alt={label} />
+          : <div className="img-upload-box__placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="28" height="28"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload</span>
+            </div>
+        }
+        {uploading && <div className="img-upload-box__loading">Uploading…</div>}
+      </div>
+      <div className="img-upload-box__info">
+        <div style={{fontWeight:700,fontSize:13}}>{label}</div>
+        <div style={{fontSize:11,color:'var(--text-3)',marginTop:2}}>{hint}</div>
+        <button className="btn btn--secondary btn--sm" style={{marginTop:8}} onClick={() => inputRef.current?.click()} disabled={uploading}>
+          {uploading ? 'Uploading…' : preview ? '🔄 Change' : '📤 Upload'}
+        </button>
+      </div>
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{display:'none'}} />
+    </div>
+  )
+}
+
 export default function ClinicSettingsPage() {
   const { user } = useAuth()
-  const [clinic, setClinic]   = useState(null)
-  const [editing, setEditing] = useState(false)
-  const [cForm, setCForm]     = useState({})
+  const [clinic, setClinic]     = useState(null)
+  const [editing, setEditing]   = useState(false)
+  const [cForm, setCForm]       = useState({})
   const [cLoading, setCLoading] = useState(false)
-  const [cMsg, setCMsg]       = useState('')
-  const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
-  const [passMsg, setPassMsg] = useState('')
-  const [passErr, setPassErr] = useState('')
+  const [cMsg, setCMsg]         = useState('')
+  const [passForm, setPassForm] = useState({ currentPassword:'', newPassword:'', confirm:'' })
+  const [passMsg, setPassMsg]   = useState('')
+  const [passErr, setPassErr]   = useState('')
   const [passLoading, setPassLoading] = useState(false)
+  const [discountRoles, setDiscountRoles] = useState([])
   const ref = useRef(null)
 
   useEffect(() => {
-    gsap.fromTo(ref.current, { y: -16, opacity: 0 }, { y: 0, opacity: 1, duration: .5 })
+    gsap.fromTo(ref.current, {y:-16,opacity:0}, {y:0,opacity:1,duration:.5})
     api.get('/clinics/my/clinic').then(r => {
-      setClinic(r.data.clinic)
+      const c = r.data.clinic
+      setClinic(c)
       setCForm({
-        name: r.data.clinic.name,
-        phone: r.data.clinic.phone,
-        email: r.data.clinic.email,
-        address: r.data.clinic.address,
-        city: r.data.clinic.city,
-        state: r.data.clinic.state,
-        licenseNumber: r.data.clinic.licenseNumber,
-        pndtRegNo: r.data.clinic.pndtRegNo || '',
-        specialization: r.data.clinic.specialization,
+        name: c.name, phone: c.phone, email: c.email,
+        address: c.address, city: c.city, state: c.state,
+        licenseNumber: c.licenseNumber, pndtRegNo: c.pndtRegNo||'',
+        specialization: c.specialization,
       })
-    }).catch(() => {})
+      setDiscountRoles(c.settings?.discountRoles || [])
+    }).catch(()=>{})
   }, [])
 
   const handleSaveClinic = async () => {
     setCLoading(true); setCMsg('')
     try {
       const r = await api.patch('/clinics/my/clinic', cForm)
-      setClinic(r.data.clinic)
-      setEditing(false)
+      setClinic(r.data.clinic); setEditing(false)
       setCMsg('Clinic details updated!')
       setTimeout(() => setCMsg(''), 3000)
-    } catch (e) { setCMsg(e.response?.data?.error || 'Failed to save') }
+    } catch(e) { setCMsg(e.response?.data?.error || 'Failed') }
     finally { setCLoading(false) }
   }
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault()
-    setPassErr(''); setPassMsg('')
+  const handleLogoUpload = async (url, fileId) => {
+    try {
+      const r = await api.patch('/clinics/my/logo', { logoUrl: url, logoFileId: fileId })
+      setClinic(prev => ({ ...prev, logoUrl: url }))
+    } catch(e) {}
+  }
+
+  const handleProfileUpload = async (url, fileId) => {
+    try {
+      await api.patch('/clinics/my/logo', { ownerProfileImage: url, ownerProfileFileId: fileId })
+      await api.patch('/auth/profile', { profileImage: url, profileImageFileId: fileId })
+    } catch(e) {}
+  }
+
+  const handleDiscountRoles = async role => {
+    const updated = discountRoles.includes(role)
+      ? discountRoles.filter(r => r !== role)
+      : [...discountRoles, role]
+    setDiscountRoles(updated)
+    await api.patch('/clinics/my/logo', { discountRoles: updated })
+  }
+
+  const handleChangePassword = async e => {
+    e.preventDefault(); setPassErr(''); setPassMsg('')
     if (passForm.newPassword !== passForm.confirm) return setPassErr('Passwords do not match')
-    if (passForm.newPassword.length < 6) return setPassErr('Password must be at least 6 characters')
+    if (passForm.newPassword.length < 6) return setPassErr('Minimum 6 characters')
     setPassLoading(true)
     try {
       await api.patch('/auth/change-password', { currentPassword: passForm.currentPassword, newPassword: passForm.newPassword })
-      setPassMsg('Password updated successfully!')
-      setPassForm({ currentPassword: '', newPassword: '', confirm: '' })
+      setPassMsg('Password updated!'); setPassForm({ currentPassword:'', newPassword:'', confirm:'' })
       setTimeout(() => setPassMsg(''), 3000)
-    } catch (e) { setPassErr(e.response?.data?.error || 'Failed') }
+    } catch(e) { setPassErr(e.response?.data?.error || 'Failed') }
     finally { setPassLoading(false) }
   }
 
-  const cf = k => ({ value: cForm[k] || '', onChange: e => setCForm({ ...cForm, [k]: e.target.value }) })
-  const pf = k => ({ value: passForm[k], onChange: e => setPassForm({ ...passForm, [k]: e.target.value }) })
+  const cf = k => ({ value: cForm[k]||'', onChange: e => setCForm({...cForm,[k]:e.target.value}) })
+
+  const sub = clinic?.subscription || {}
+  const daysLeft = sub.endDate ? Math.ceil((new Date(sub.endDate)-new Date())/86400000) : null
 
   return (
-    <div style={{ maxWidth: 860 }}>
+    <div style={{maxWidth:900}}>
       <div className="page-header" ref={ref}>
-        <div><h1>Settings</h1><p>Clinic profile and account management</p></div>
+        <div><h1>Settings</h1><p>Manage clinic profile, images, and account settings</p></div>
       </div>
 
-      {cMsg && <div className="alert alert--success" style={{ marginBottom: 16 }}>{cMsg}</div>}
+      {/* Subscription warning */}
+      {daysLeft !== null && daysLeft <= 30 && (
+        <div className={`notif-bar notif-bar--${daysLeft<=7?'danger':'warn'}`} style={{marginBottom:20}}>
+          <span className="notif-bar__icon">⚠️</span>
+          <span className="notif-bar__text">
+            Your subscription expires in <strong>{daysLeft} day{daysLeft!==1?'s':''}</strong> ({new Date(sub.endDate).toLocaleDateString('en-IN')}). Contact admin to renew.
+          </span>
+        </div>
+      )}
 
-      {/* Clinic Information */}
-      <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 14, borderBottom: '1px solid var(--border)' }}>
+      {cMsg && <div className="alert alert--success" style={{marginBottom:16}}>{cMsg}</div>}
+
+      {/* Images section */}
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:16,paddingBottom:12,borderBottom:'1px solid var(--border)'}}>
+          Branding & Profile Images
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+          <ImageUploadBox
+            label="Clinic Logo"
+            hint="Appears on F-Forms and Bills · PNG/JPG recommended"
+            current={clinic?.logoUrl || clinic?.logo}
+            onUpload={handleLogoUpload}
+          />
+          <ImageUploadBox
+            label="Your Profile Photo"
+            hint="Shown in sidebar and staff list"
+            current={user?.profileImage || clinic?.ownerProfileImage}
+            onUpload={handleProfileUpload}
+          />
+        </div>
+      </div>
+
+      {/* Clinic info */}
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18,paddingBottom:12,borderBottom:'1px solid var(--border)'}}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700 }}>Clinic Information</div>
-            {clinic?.clinicId && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 2 }}>ID: <strong>{clinic.clinicId}</strong></div>}
+            <div style={{fontWeight:700,fontSize:15}}>Clinic Information</div>
+            {clinic?.clinicId && <div style={{fontSize:11,color:'var(--text-3)',marginTop:2}}>ID: <strong>{clinic.clinicId}</strong></div>}
           </div>
-          <button className={`btn btn--${editing ? 'secondary' : 'primary'} btn--sm`} onClick={() => setEditing(!editing)}>
+          <button className={`btn btn--${editing?'secondary':'primary'} btn--sm`} onClick={() => setEditing(!editing)}>
             {editing ? '✕ Cancel' : '✎ Edit'}
           </button>
         </div>
 
         {editing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div className="form-group" style={{ gridColumn: '1/-1' }}><label>Clinic Name *</label><input {...cf('name')} /></div>
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div className="form-grid-2">
+              <div className="form-group" style={{gridColumn:'1/-1'}}><label>Clinic Name *</label><input {...cf('name')} /></div>
               <div className="form-group"><label>Phone</label><input {...cf('phone')} /></div>
               <div className="form-group"><label>Email</label><input type="email" {...cf('email')} /></div>
               <div className="form-group"><label>License Number</label><input {...cf('licenseNumber')} /></div>
-              <div className="form-group"><label>PNDT Reg. No.</label><input {...cf('pndtRegNo')} placeholder="PNDT registration number" /></div>
+              <div className="form-group"><label>PNDT Reg. No.</label><input {...cf('pndtRegNo')} /></div>
               <div className="form-group"><label>City</label><input {...cf('city')} /></div>
               <div className="form-group"><label>State</label><input {...cf('state')} /></div>
-              <div className="form-group" style={{ gridColumn: '1/-1' }}><label>Full Address</label><input {...cf('address')} /></div>
+              <div className="form-group" style={{gridColumn:'1/-1'}}><label>Full Address</label><input {...cf('address')} /></div>
             </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
               <button className="btn btn--secondary" onClick={() => setEditing(false)}>Cancel</button>
-              <button className="btn btn--primary" onClick={handleSaveClinic} disabled={cLoading}>{cLoading ? 'Saving…' : 'Save Changes'}</button>
+              <button className="btn btn--primary" onClick={handleSaveClinic} disabled={cLoading}>{cLoading?'Saving…':'Save Changes'}</button>
             </div>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:0}}>
             {[
-              ['Clinic Name', clinic?.name],
-              ['Specialization', clinic?.specialization || '—'],
-              ['Phone', clinic?.phone || '—'],
-              ['Email', clinic?.email || '—'],
-              ['License No.', clinic?.licenseNumber || '—'],
-              ['PNDT Reg. No.', clinic?.pndtRegNo || '—'],
-              ['City', clinic?.city || '—'],
-              ['State', clinic?.state || '—'],
-              ['Plan', clinic?.subscription?.plan?.toUpperCase()],
-              ['Expires', clinic?.subscription?.endDate ? new Date(clinic.subscription.endDate).toLocaleDateString('en-IN') : '—'],
-              ['Status', clinic?.isActive ? 'Active' : 'Suspended'],
-            ].map(([label, val]) => (
-              <div key={label} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, alignItems: 'center' }}>
-                <div style={{ minWidth: 130, fontSize: 11, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</div>
-                <div style={{ fontSize: 13, color: 'var(--text-1)', fontWeight: 500 }}>
-                  {label === 'Status' ? (
-                    <span className={`badge badge--${clinic?.isActive ? 'green' : 'red'}`}>{val}</span>
-                  ) : label === 'Plan' ? (
-                    <span className="badge badge--teal">{val}</span>
-                  ) : val}
+              ['Clinic Name',   clinic?.name],
+              ['Specialization',clinic?.specialization||'—'],
+              ['Phone',         clinic?.phone||'—'],
+              ['Email',         clinic?.email||'—'],
+              ['License No.',   clinic?.licenseNumber||'—'],
+              ['PNDT Reg. No.', clinic?.pndtRegNo||'—'],
+              ['City',          clinic?.city||'—'],
+              ['State',         clinic?.state||'—'],
+              ['Plan',          sub.plan?.toUpperCase()],
+              ['Expires',       sub.endDate?new Date(sub.endDate).toLocaleDateString('en-IN'):'—'],
+            ].map(([l,v]) => (
+              <div key={l} style={{padding:'9px 0',borderBottom:'1px solid var(--border)',display:'flex',gap:12}}>
+                <div style={{minWidth:130,fontSize:11,fontWeight:700,color:'var(--text-3)',textTransform:'uppercase',letterSpacing:'.04em'}}>{l}</div>
+                <div style={{fontSize:13,color:'var(--text-1)',fontWeight:500}}>
+                  {l==='Plan'?<span className="badge badge--teal">{v}</span>:v}
                 </div>
               </div>
             ))}
@@ -131,38 +227,63 @@ export default function ClinicSettingsPage() {
         )}
       </div>
 
+      {/* Discount permissions */}
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:4,paddingBottom:12,borderBottom:'1px solid var(--border)'}}>
+          Discount Permissions
+        </div>
+        <p style={{fontSize:13,color:'var(--text-2)',margin:'12px 0'}}>
+          Select which staff roles can apply discounts when creating bills.
+          Clinic owner always has discount permission.
+        </p>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {DISCOUNT_ROLES.map(r => (
+            <label key={r.val} style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer',padding:'10px 14px',background:'var(--bg)',borderRadius:8,border:`1.5px solid ${discountRoles.includes(r.val)?'var(--teal)':'var(--border)'}`}}>
+              <input type="checkbox" checked={discountRoles.includes(r.val)} onChange={() => handleDiscountRoles(r.val)} style={{width:16,height:16,accentColor:'var(--teal)'}} />
+              <div>
+                <div style={{fontWeight:600,fontSize:13}}>{r.label}</div>
+                <div style={{fontSize:11,color:'var(--text-3)'}}>Can apply discounts on bills</div>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* My Account */}
-      <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>My Account</div>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 16, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--purple-bg,#F5F3FF)', color: 'var(--purple,#8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 20 }}>
-            {user?.name?.[0]}
-          </div>
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:16,paddingBottom:12,borderBottom:'1px solid var(--border)'}}>My Account</div>
+        <div style={{display:'flex',gap:14,alignItems:'center',paddingBottom:16,borderBottom:'1px solid var(--border)',marginBottom:16}}>
+          {user?.profileImage
+            ? <img src={user.profileImage} alt="" style={{width:52,height:52,borderRadius:'50%',objectFit:'cover',flexShrink:0}} />
+            : <div style={{width:52,height:52,borderRadius:'50%',background:'var(--purple-bg,#F5F3FF)',color:'var(--purple,#8B5CF6)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:22,flexShrink:0}}>
+                {user?.name?.[0]}
+              </div>
+          }
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{user?.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{user?.email}</div>
-            <span className="badge badge--purple" style={{ marginTop: 4 }}>Clinic Owner</span>
+            <div style={{fontWeight:700,fontSize:15}}>{user?.name}</div>
+            <div style={{fontSize:12,color:'var(--text-3)'}}>{user?.email}</div>
+            <span className="badge badge--purple" style={{marginTop:4}}>Clinic Owner</span>
           </div>
-          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <div style={{ fontSize: 11, color: 'var(--text-3)' }}>Last login</div>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('en-IN') : '—'}</div>
+          <div style={{marginLeft:'auto',textAlign:'right'}}>
+            <div style={{fontSize:11,color:'var(--text-3)'}}>Last login</div>
+            <div style={{fontSize:12,fontWeight:600}}>{user?.lastLogin?new Date(user.lastLogin).toLocaleString('en-IN'):'—'}</div>
           </div>
         </div>
       </div>
 
-      {/* Change Password */}
-      <div className="card" style={{ padding: 24 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>Change Password</div>
-        {passMsg && <div className="alert alert--success" style={{ marginBottom: 14 }}>{passMsg}</div>}
-        {passErr && <div className="alert alert--error" style={{ marginBottom: 14 }}>{passErr}</div>}
-        <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="form-group"><label>Current Password *</label><input type="password" {...pf('currentPassword')} required /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-            <div className="form-group"><label>New Password *</label><input type="password" {...pf('newPassword')} required minLength={6} /></div>
-            <div className="form-group"><label>Confirm New Password *</label><input type="password" {...pf('confirm')} required /></div>
+      {/* Change password */}
+      <div className="card" style={{padding:24}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:16,paddingBottom:12,borderBottom:'1px solid var(--border)'}}>Change Password</div>
+        {passMsg && <div className="alert alert--success" style={{marginBottom:14}}>{passMsg}</div>}
+        {passErr && <div className="alert alert--error"  style={{marginBottom:14}}>{passErr}</div>}
+        <form onSubmit={handleChangePassword} style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div className="form-group"><label>Current Password *</label><input type="password" value={passForm.currentPassword} onChange={e=>setPassForm({...passForm,currentPassword:e.target.value})} required /></div>
+          <div className="form-grid-2">
+            <div className="form-group"><label>New Password *</label><input type="password" value={passForm.newPassword} onChange={e=>setPassForm({...passForm,newPassword:e.target.value})} required minLength={6} /></div>
+            <div className="form-group"><label>Confirm *</label><input type="password" value={passForm.confirm} onChange={e=>setPassForm({...passForm,confirm:e.target.value})} required /></div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn--primary" disabled={passLoading}>{passLoading ? 'Updating…' : 'Update Password'}</button>
+          <div style={{display:'flex',justifyContent:'flex-end'}}>
+            <button type="submit" className="btn btn--primary" disabled={passLoading}>{passLoading?'Updating…':'Update Password'}</button>
           </div>
         </form>
       </div>

@@ -1,137 +1,180 @@
-.login-page {
+// ── Login Page ─────────────────────────────────────────────────────────
+// Inspired by the uploaded reference design: white form left, teal illustration right
+
+.lp {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  background: #0F172A;
+  background: #F0F4F8;  // solid, no gradient
   padding: 20px;
-  position: relative; overflow: hidden;
-}
+  position: relative;
 
-.login-bg {
-  position: absolute; inset: 0; pointer-events: none;
-  &__circle {
-    position: absolute; border-radius: 50%;
-    background: radial-gradient(circle, rgba(14,165,160,.15), transparent 70%);
-    &--1 { width: 600px; height: 600px; top: -200px; left: -200px; }
-    &--2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: radial-gradient(circle, rgba(59,130,246,.1), transparent 70%); }
+  // Subtle dot grid
+  &__bg {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: .45;
   }
 }
 
-.login-card {
-  display: grid; grid-template-columns: 1fr 420px;
-  width: 100%; max-width: 900px;
-  background: #1E293B; border-radius: 20px;
-  overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.5);
-  border: 1px solid rgba(255,255,255,.06);
+.lp__card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%; max-width: 860px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 48px rgba(15,23,42,.13);
   position: relative; z-index: 1;
-}
 
-/* LEFT */
-.login-left {
-  padding: 44px 40px;
-  background: linear-gradient(145deg, #0EA5A0 0%, #0C7A76 100%);
-  display: flex; flex-direction: column; gap: 0;
-
-  &__brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
-  &__logo {
-    width: 36px; height: 36px; background: rgba(255,255,255,.2);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    svg { width: 18px; height: 18px; }
+  @media(max-width: 720px) {
+    grid-template-columns: 1fr;
+    max-width: 420px;
   }
-  &__name { font-size: 20px; font-weight: 800; color: white; span { color: rgba(255,255,255,.7); } }
-  &__tagline { font-size: 24px; font-weight: 800; color: white; line-height: 1.25; margin-bottom: 10px; }
-  &__desc { font-size: 13px; color: rgba(255,255,255,.75); line-height: 1.6; margin-bottom: 28px; }
 }
 
-.login-features {
-  display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px;
-}
-.login-feature {
-  display: flex; align-items: flex-start; gap: 10px;
-  &__icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  font-size: 13px; color: rgba(255,255,255,.85); line-height: 1.4;
-}
-
-.login-roles {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;
-}
-.login-role {
-  background: rgba(255,255,255,.12); border-radius: 8px; padding: 8px 10px;
-  &__name { font-size: 11px; font-weight: 700; color: white; }
-  &__hint { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 1px; }
-}
-
-/* RIGHT */
-.login-right {
-  padding: 40px 36px;
-  background: #F8FAFC;
+// ── Left: Form ──────────────────────────────────────────────────────────
+.lp__form-side {
+  padding: 48px 40px;
   display: flex; flex-direction: column;
 
-  &__header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 32px;
-    font-size: 15px; font-weight: 800; color: var(--text-1);
-  }
-  &__logo-sm {
-    width: 28px; height: 28px; background: var(--teal);
-    border-radius: 7px; display: flex; align-items: center; justify-content: center;
-  }
-  &__title { font-size: 26px; font-weight: 800; color: var(--text-1); margin-bottom: 4px; }
-  &__sub   { font-size: 13px; color: var(--text-2); margin-bottom: 24px; }
-  &__footer { margin-top: auto; padding-top: 20px; font-size: 11px; color: var(--text-3); text-align: center; }
+  @media(max-width: 720px) { padding: 36px 28px; }
 }
 
-.login-error {
+.lp__logo {
+  margin-bottom: 32px;
+  img {
+    height: 36px; width: auto; object-fit: contain; display: block;
+    // logo has black bg - invert in light mode if needed; our bg is white so should look fine
+  }
+}
+
+.lp__title {
+  font-size: 24px; font-weight: 800; color: #0F172A;
+  margin-bottom: 6px; line-height: 1.25;
+}
+
+.lp__sub {
+  font-size: 13px; color: #64748B; margin-bottom: 28px;
+}
+
+.lp__error {
   display: flex; align-items: center; gap: 7px;
-  background: var(--red-bg); color: var(--red);
-  border: 1px solid #FECACA; border-radius: 8px;
-  padding: 10px 14px; font-size: 13px; font-weight: 500;
+  background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;
+  border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 500;
   margin-bottom: 16px;
 }
 
-.login-form {
+.lp__fields {
   display: flex; flex-direction: column; gap: 16px;
+}
 
-  &__group {
-    display: flex; flex-direction: column; gap: 5px;
-    label { font-size: 12px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
-  }
-
-  &__input-wrap {
-    position: relative; display: flex; align-items: center;
-    background: white; border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm); transition: border-color var(--ease);
-    &:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-50); }
-    > svg { position: absolute; left: 12px; color: var(--text-3); flex-shrink: 0; }
-    input {
-      width: 100%; padding: 10px 12px 10px 38px;
-      border: none; outline: none; font-size: 14px;
-      color: var(--text-1); background: transparent;
-      font-family: var(--font-ui);
-      &::placeholder { color: var(--text-3); }
+.lp__field {
+  position: relative;
+  input {
+    width: 100%; padding: 13px 16px;
+    border: 1.5px solid #E2E8F0; border-radius: 10px;
+    font-size: 14px; color: #0F172A; outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: border-color .15s, box-shadow .15s;
+    &::placeholder { color: #94A3B8; }
+    &:focus {
+      border-color: #0EA5A0;
+      box-shadow: 0 0 0 3px rgba(14,165,160,.1);
     }
   }
 
-  &__eye {
-    position: absolute; right: 10px; font-size: 15px;
-    opacity: .5; transition: opacity var(--ease);
-    &:hover { opacity: 1; }
-  }
-
-  &__submit {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 12px; background: var(--teal); color: white;
-    border-radius: var(--radius-sm); font-size: 15px; font-weight: 700;
-    border: none; cursor: pointer; transition: background var(--ease);
-    margin-top: 4px;
-    span { font-size: 18px; }
-    &:hover { background: var(--teal-dark); }
-    &:disabled { opacity: .65; cursor: not-allowed; }
-  }
+  &--pass input { padding-right: 48px; }
 }
 
-.login-spinner {
-  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3);
-  border-top-color: white; border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: inline-block;
+.lp__eye {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: #94A3B8; padding: 4px; display: flex; align-items: center; justify-content: center;
+  transition: color .15s;
+  &:hover { color: #0EA5A0; }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+.lp__row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: -4px;
+}
+
+.lp__remember {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: #0EA5A0; cursor: pointer;
+  }
+  span { font-size: 13px; color: #475569; font-weight: 500; }
+}
+
+.lp__forgot {
+  font-size: 13px; color: #0EA5A0; font-weight: 600;
+  transition: color .15s;
+  &:hover { color: #0C8F8A; text-decoration: underline; }
+}
+
+.lp__submit {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px; background: #0EA5A0; color: white;
+  border-radius: 10px; font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer; margin-top: 4px;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 4px 14px rgba(14,165,160,.35);
+  &:hover:not(:disabled) {
+    background: #0C8F8A;
+    box-shadow: 0 6px 20px rgba(14,165,160,.45);
+    transform: translateY(-1px);
+  }
+  &:active { transform: translateY(0); }
+  &:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+}
+
+.lp__spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,.35); border-top-color: white;
+  border-radius: 50%; animation: lp-spin .7s linear infinite; display: inline-block;
+}
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+
+.lp__footer {
+  margin-top: auto; padding-top: 24px;
+  font-size: 11px; color: #94A3B8; text-align: center;
+}
+
+// ── Right: Illustration ─────────────────────────────────────────────────
+.lp__illus-side {
+  background: #0EA5A0;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  min-height: 480px;
+
+  // Subtle circles
+  &::before {
+    content: '';
+    position: absolute; width: 300px; height: 300px;
+    background: rgba(255,255,255,.08); border-radius: 50%;
+    top: -80px; right: -80px;
+  }
+  &::after {
+    content: '';
+    position: absolute; width: 200px; height: 200px;
+    background: rgba(255,255,255,.06); border-radius: 50%;
+    bottom: -60px; left: -40px;
+  }
+
+  @media(max-width: 720px) { display: none; }
+}
+
+.lp__illus-inner {
+  position: relative; z-index: 1;
+  padding: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.lp__illus-img {
+  width: 100%; max-width: 340px;
+  object-fit: contain;
+  // loginillustration.png has black bg - mix-blend-mode to blend with teal bg
+  mix-blend-mode: lighten;
+  filter: brightness(1.05);
+}

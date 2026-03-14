@@ -38,9 +38,14 @@ const clinicSchema = new mongoose.Schema({
     endDate:        { type: Date },
     durationMonths: { type: Number, enum: [1, 6, 12], default: 1 },
   },
+  logoUrl:      { type: String, default: '' },
+  logoFileId:   { type: String, default: '' },
+  ownerProfileImage:   { type: String, default: '' },
+  ownerProfileFileId:  { type: String, default: '' },
   settings: {
-    maxPatients: { type: Number, default: 1000 },
-    maxStaff:    { type: Number, default: 10 },
+    maxPatients:    { type: Number, default: 1000 },
+    maxStaff:       { type: Number, default: 10 },
+    discountRoles:  { type: [String], default: [] }, // roles allowed to give discount
   },
 }, { timestamps: true });
 

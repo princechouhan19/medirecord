@@ -12,6 +12,7 @@ router.post('/my/staff',   requireRole('clinic_owner'), c.addStaff)
 router.patch('/my/staff/:userId/toggle', requireRole('clinic_owner'), c.removeStaff)
 
 // ── Test category management ─────────────────────────────────────────
+router.patch('/my/logo', requireRole('clinic_owner'), c.updateLogoAndSettings);
 router.get('/my/tests',           requireRole('clinic_owner','receptionist','lab_handler'), c.getTestCategories)
 router.post('/my/tests',          requireRole('clinic_owner'), c.upsertTestCategory)
 router.delete('/my/tests/:catId', requireRole('clinic_owner'), c.removeTestCategory)

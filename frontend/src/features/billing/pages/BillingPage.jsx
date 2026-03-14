@@ -1,0 +1,287 @@
+import { useState, useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import { useAuth } from '../../auth/hooks/useAuth'
+import api from '../../../services/api'
+import BillView from '../components/BillView'
+import '../styles/billing.scss'
+
+const PAY_MODES = ['cash','upi','card','pending']
+
+function NewBillModal({ patients, clinic, onClose, onSave }) {
+  const { user } = useAuth()
+  const [patientId, setPatientId] = useState('')
+  const [items, setItems]         = useState([{ description:'', amount:'' }])
+  const [discountType, setDiscountType] = useState('flat')
+  const [discountValue, setDiscountValue] = useState('')
+  const [isPaid, setIsPaid]       = useState(true)
+  const [paymentMode, setPaymentMode] = useState('cash')
+  const [notes, setNotes]         = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
+
+  const canDiscount = user?.role === 'clinic_owner' ||
+    (clinic?.settings?.discountRoles || []).includes(user?.role)
+
+  const subtotal = items.reduce((s,i) => s + (parseFloat(i.amount)||0), 0)
+  const dv = parseFloat(discountValue) || 0
+  const discAmt = discountType === 'percent'
+    ? Math.round(subtotal * dv / 100)
+    : Math.min(dv, subtotal)
+  const total = Math.max(0, subtotal - discAmt)
+
+  const addItem = () => setItems(s => [...s, { description:'', amount:'' }])
+  const rmItem  = i => setItems(s => s.filter((_,j) => j !== i))
+  const updItem = (i,k,v) => setItems(s => s.map((r,j) => j===i ? {...r,[k]:v} : r))
+
+  const handlePatientChange = e => {
+    const pid = e.target.value; setPatientId(pid)
+    const pt = patients.find(p => p._id === pid)
+    if (pt?.testName) setItems([{ description: pt.testName, amount: String(pt.fee||'') }])
+  }
+
+  const handleSave = async () => {
+    if (!patientId) return setError('Select a patient')
+    const validItems = items.filter(i => i.description && i.amount)
+    if (!validItems.length) return setError('Add at least one item with description and amount')
+    setLoading(true); setError('')
+    try {
+      const r = await api.post('/bills', {
+        patient: patientId,
+        items: validItems.map(i => ({ description: i.description, amount: parseFloat(i.amount)||0 })),
+        discountType, discountValue: parseFloat(discountValue)||0,
+        isPaid, paymentMode, notes,
+      })
+      onSave(r.data.bill)
+    } catch(e) { setError(e.response?.data?.error || 'Failed to create bill') }
+    finally { setLoading(false) }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal modal--wide">
+        <div className="modal__header">
+          <h2>Create Bill</h2>
+          <button className="modal__close" onClick={onClose}>✕</button>
+        </div>
+        {error && <div className="alert alert--error" style={{margin:'0 20px 0'}}>{error}</div>}
+        <div className="modal__form">
+          <div className="form-group">
+            <label>Patient *</label>
+            <select value={patientId} onChange={handlePatientChange} required>
+              <option value="">Select patient</option>
+              {patients.map(p => (
+                <option key={p._id} value={p._id}>
+                  #{String(p.tokenNo||'').padStart(3,'0')} · {p.name} — {p.testName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="modal__section">Bill Items</div>
+          <div className="bill-items">
+            {items.map((item,i) => (
+              <div key={i} className="bill-item">
+                <input
+                  value={item.description}
+                  onChange={e => updItem(i,'description',e.target.value)}
+                  placeholder="Description (e.g. USG Obstetric)"
+                  className="bill-item__desc"
+                />
+                <div className="bill-item__price">
+                  <span>₹</span>
+                  <input type="number" value={item.amount}
+                    onChange={e => updItem(i,'amount',e.target.value)} placeholder="0" min={0} />
+                </div>
+                {items.length > 1 && (
+                  <button className="btn btn--danger btn--sm btn--icon" onClick={() => rmItem(i)}>✕</button>
+                )}
+              </div>
+            ))}
+            <button className="btn btn--secondary btn--sm" onClick={addItem} style={{alignSelf:'flex-start'}}>+ Add Item</button>
+          </div>
+
+          {canDiscount && (
+            <>
+              <div className="modal__section">Discount</div>
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label>Discount Type</label>
+                  <select value={discountType} onChange={e => setDiscountType(e.target.value)}>
+                    <option value="flat">Flat Amount (₹)</option>
+                    <option value="percent">Percentage (%)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>{discountType === 'percent' ? 'Percentage' : 'Amount'}</label>
+                  <input type="number" value={discountValue}
+                    onChange={e => setDiscountValue(e.target.value)}
+                    placeholder="0" min={0} max={discountType==='percent'?100:undefined} />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="bill-summary">
+            <div className="bill-summary__row"><span>Subtotal</span><span>₹{subtotal}</span></div>
+            {discAmt > 0 && (
+              <div className="bill-summary__row bill-summary__row--discount">
+                <span>Discount {discountType==='percent' ? `(${dv}%)` : ''}</span>
+                <span>-₹{discAmt}</span>
+              </div>
+            )}
+            <div className="bill-summary__total">
+              <span>Total</span><span>₹{total}</span>
+            </div>
+          </div>
+
+          <div className="form-grid-2">
+            <div className="form-group">
+              <label>Payment Mode</label>
+              <select value={paymentMode} onChange={e => setPaymentMode(e.target.value)}>
+                {PAY_MODES.map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>)}
+              </select>
+            </div>
+            <div className="form-group" style={{justifyContent:'flex-end'}}>
+              <label style={{display:'flex',alignItems:'center',gap:8,textTransform:'none',fontSize:13,fontWeight:600,cursor:'pointer'}}>
+                <input type="checkbox" checked={isPaid} onChange={e => setIsPaid(e.target.checked)} style={{width:16,height:16}} />
+                Mark as Paid
+              </label>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Notes (optional)</label>
+            <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any additional notes..." />
+          </div>
+        </div>
+        <div className="modal__footer">
+          <button className="btn btn--secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn--primary" onClick={handleSave} disabled={loading}>
+            {loading ? 'Saving…' : '💾 Save Bill'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function BillingPage() {
+  const { user } = useAuth()
+  const [bills, setBills]     = useState([])
+  const [patients, setPatients] = useState([])
+  const [stats, setStats]     = useState({ todayCount:0, todayRevenue:0, totalRevenue:0 })
+  const [clinic, setClinic]   = useState(null)
+  const [showNew, setShowNew] = useState(false)
+  const [viewBill, setViewBill] = useState(null)
+  const [dateFilter, setDate] = useState(new Date().toISOString().split('T')[0])
+  const ref = useRef(null)
+
+  useEffect(() => {
+    gsap.fromTo(ref.current, {y:-16,opacity:0}, {y:0,opacity:1,duration:.5})
+    loadAll()
+    if (user?.role === 'clinic_owner') {
+      api.get('/clinics/my/clinic').then(r => setClinic(r.data.clinic)).catch(()=>{})
+    }
+  }, [])
+
+  const loadAll = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const [b, p, s] = await Promise.all([
+        api.get(`/bills?date=${today}`),
+        api.get('/patients/today'),
+        api.get('/bills/stats'),
+      ])
+      setBills(b.data.bills || [])
+      setPatients(p.data.patients || [])
+      setStats(s.data || {})
+    } catch(e) { console.error(e) }
+  }
+
+  const handleDateChange = async e => {
+    setDate(e.target.value)
+    const r = await api.get(`/bills?date=${e.target.value}`)
+    setBills(r.data.bills || [])
+  }
+
+  const handleViewBill = async id => {
+    try {
+      const r = await api.get(`/bills/${id}`)
+      setViewBill(r.data.bill)
+    } catch(e) {}
+  }
+
+  const handleNewBill = async bill => {
+    setShowNew(false)
+    await loadAll()
+    handleViewBill(bill._id)
+  }
+
+  return (
+    <div style={{maxWidth:1200}}>
+      <div className="page-header" ref={ref}>
+        <div><h1>Billing</h1><p>Generate and manage patient bills with discounts</p></div>
+        <button className="btn btn--primary" onClick={() => setShowNew(true)}>+ Create Bill</button>
+      </div>
+
+      <div className="billing-stats">
+        {[
+          { label:"Today's Bills",   val: stats.todayCount,   prefix:'',  color:'var(--blue)' },
+          { label:"Today's Revenue", val: stats.todayRevenue, prefix:'₹', color:'var(--green)' },
+          { label:"Total Revenue",   val: stats.totalRevenue, prefix:'₹', color:'var(--teal)' },
+        ].map(s => (
+          <div key={s.label} className="card" style={{padding:18,borderTop:`3px solid ${s.color}`}}>
+            <div style={{fontFamily:'var(--font-num)',fontSize:26,fontWeight:800,color:s.color}}>
+              {s.prefix}{(s.val||0).toLocaleString('en-IN')}
+            </div>
+            <div style={{fontSize:12,color:'var(--text-2)',fontWeight:600,marginTop:2}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap',alignItems:'center'}}>
+        <label style={{fontSize:12,fontWeight:600,color:'var(--text-2)',textTransform:'uppercase',letterSpacing:'.04em'}}>Filter Date</label>
+        <input type="date" value={dateFilter} onChange={handleDateChange}
+          style={{padding:'8px 12px',border:'1.5px solid var(--border)',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}} />
+        <span style={{fontSize:13,color:'var(--text-3)'}}>{bills.length} bills found</span>
+      </div>
+
+      <div className="card table-scroll">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Bill #</th><th>Patient</th><th>Items</th>
+              <th>Discount</th><th>Total</th><th>Payment</th><th>Status</th><th>By</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {bills.map(b => (
+              <tr key={b._id}>
+                <td className="td-mono">{b.billNo}</td>
+                <td>
+                  <div className="td-name">{b.patient?.name}</div>
+                  <div className="td-muted">{b.patient?.age}y · {b.patient?.gender}</div>
+                </td>
+                <td style={{maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontSize:12}}>
+                  {b.items?.map(i=>i.description).join(', ')}
+                </td>
+                <td className="td-muted">{b.discountAmt > 0 ? `₹${b.discountAmt}` : '—'}</td>
+                <td><span style={{fontFamily:'var(--font-num)',fontWeight:700,fontSize:15}}>₹{b.total}</span></td>
+                <td><span className="badge badge--gray">{b.paymentMode}</span></td>
+                <td><span className={`badge badge--${b.isPaid?'green':'amber'}`}>{b.isPaid?'✓ Paid':'Pending'}</span></td>
+                <td className="td-muted">{b.createdBy?.name?.split(' ')[0]||'—'}</td>
+                <td><button className="btn btn--primary btn--sm" onClick={() => handleViewBill(b._id)}>View</button></td>
+              </tr>
+            ))}
+            {bills.length === 0 && (
+              <tr><td colSpan={9} className="empty-row">No bills for this date</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showNew && <NewBillModal patients={patients} clinic={clinic} onClose={() => setShowNew(false)} onSave={handleNewBill} />}
+      {viewBill && <BillView bill={viewBill} onClose={() => setViewBill(null)} />}
+    </div>
+  )
+}

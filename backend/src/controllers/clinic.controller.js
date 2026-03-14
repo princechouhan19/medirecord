@@ -246,3 +246,19 @@ exports.removeTestCategory = async (req, res, next) => {
     res.json({ testCategories: clinic.testCategories });
   } catch (err) { next(err); }
 };
+
+// ── Logo + Discount Settings ─────────────────────────────────────────
+exports.updateLogoAndSettings = async (req, res, next) => {
+  try {
+    const { logoUrl, logoFileId, ownerProfileImage, ownerProfileFileId, discountRoles } = req.body;
+    const clinic = await require('../models/Clinic.model').findById(req.user.clinic);
+    if (!clinic) return res.status(404).json({ error: 'Clinic not found' });
+    if (logoUrl !== undefined) clinic.logoUrl = logoUrl;
+    if (logoFileId !== undefined) clinic.logoFileId = logoFileId;
+    if (ownerProfileImage !== undefined) clinic.ownerProfileImage = ownerProfileImage;
+    if (ownerProfileFileId !== undefined) clinic.ownerProfileFileId = ownerProfileFileId;
+    if (discountRoles !== undefined) clinic.settings.discountRoles = discountRoles;
+    await clinic.save();
+    res.json({ clinic });
+  } catch(err){ next(err); }
+};

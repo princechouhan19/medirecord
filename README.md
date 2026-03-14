@@ -1,207 +1,495 @@
 <div align="center">
-  <img src="frontend/public/logo.png" alt="MediRecord Logo" width="300" />
+  <img src="frontend/public/logo.png" alt="MediRecord Logo" width="320" />
 
-  # MediRecord — Smart EMR & Clinic Management System
+  <h1>MediRecord — Smart EMR & Clinic Management</h1>
+
+  <p>
+    <a href="https://medirecord-x0jg.onrender.com" target="_blank">🌐 Live Demo</a> ·
+    <a href="https://github.com/princechouhan19/medirecord">GitHub</a> ·
+    Built for Indian Diagnostic Clinics
+  </p>
+
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=flat&logo=vite&logoColor=white" />
 </div>
 
-MediRecord is a comprehensive, full-stack Electronic Medical Record (EMR) solution designed for clinics and healthcare providers. It provides a seamless interface for patient registration, diagnostic reporting, visit tracking, and essential clinical documentation.
+---
+
+## What is MediRecord?
+
+MediRecord is a production-grade, full-stack Electronic Medical Record (EMR) platform built specifically for Indian diagnostic clinics — sonography centres, pathology labs, imaging centres, and multispeciality clinics. It handles the complete patient lifecycle from registration through government-compliant PNDT documentation, with smart billing, live queue management, and 4-tier role-based access control.
 
 ---
 
-## 🚀 Vision
-To empower healthcare providers with a lightweight, fast, and feature-rich EMR that simplifies administrative overhead and focuses on patient care.
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Node.js, Express, MongoDB + Mongoose |
+| **Frontend** | React 18, Vite, SCSS, GSAP animations |
+| **Auth** | JWT + bcryptjs (role-based) |
+| **Routing** | React Router v6 (protected routes per role) |
+| **File Storage** | ImageKit (logos, profile photos) |
+| **Security** | Helmet, CORS, express-rate-limit |
+| **Deployment** | Render.com (single-service, frontend served from Express) |
 
 ---
 
-## 🛠 Tech Stack
+## 4-Tier Role System
 
-### Backend
-- **Node.js & Express** — High-performance RESTful API.
-- **MongoDB & Mongoose** — Scalable NoSQL document storage.
-- **ImageKit** — Professional-grade file and image storage for reports and profiles.
-- **JWT & bcryptjs** — Secure token-based authentication and industry-standard password hashing.
-- **Helmet & Rate Limit** — Defensive security headers and API protection.
+```
+superadmin
+  └── Registers clinics, assigns Clinic IDs, manages subscriptions
+      └── clinic_owner  (1 per clinic)
+            ├── Manages staff, test fees, discount permissions, logos
+            ├── Views all data + activity audit log
+            └── receptionist  /  lab_handler  /  doctor
+                    │                  │              │
+                Register patients   Run tests     View referred
+                Fill F-Forms        Mark complete  patients
+                Create bills        Update queue
+```
 
-### Frontend
-- **React 18 & Vite** — Modern UI framework with ultra-fast development server.
-- **SCSS** — Scalable CSS with advanced variables and modular architecture.
-- **GSAP (GreenSock)** — Premium micro-animations for an interactive user experience.
-- **React Router 6** — Robust client-side navigation with protected role-based routing.
-- **Lucide React** — Sleek, consistent iconography.
-
----
-
-## 🔐 4-Tier Role Hierarchy
-
-| Role | Login Path | Can Do |
-|------|-----------|--------|
-| `superadmin` | `/admin` | Register clinics, assign Clinic IDs, manage subscriptions |
-| `clinic_owner` | `/clinic` | Manage staff, set test fees, view all data + audit log |
-| `receptionist` | `/reception` | Register patients, collect fees, fill F-Forms |
-| `lab_handler` | `/lab` | Pick patients from queue, run tests, mark complete |
+| Role | Home Route | Key Permissions |
+|------|-----------|----------------|
+| `superadmin` | `/admin` | Full platform — clinics, subscriptions, Clinic ID assignment |
+| `clinic_owner` | `/clinic` | Full clinic — staff, fees, audit, settings, billing |
+| `receptionist` | `/reception` | Register patients, queue, F-Forms, billing |
+| `lab_handler` | `/lab` | Queue pickup, mark in-progress / complete |
 | `doctor` | `/reception` | View patients, referred cases |
 
 ---
 
-## 📁 Folder Structure
+## Feature Set (v4)
 
-```text
-MediRecord/
+### Patient Management
+- Register with name, age, gender, phone, LMP, husband/father name, address
+- **Auto token number** per day (`#001`, `#002`…) — resets daily
+- Test category + sub-test selection with auto-filled fee from clinic config
+- Payment mode: cash / UPI / card / pending
+- **Printable receipt** with token number, patient details, fee
+
+### Live Queue Board
+- Real-time daily queue auto-refreshed every 15 seconds
+- Status flow: `Waiting → In Progress → Completed / Cancelled`
+- Role-gated actions: Lab Handler clicks **Start** / **Complete**
+- Filter by status (Waiting / In Progress / Completed / All)
+
+### Billing System
+- Create bills with line items, auto-filled from patient test
+- **Discount support**: flat amount or percentage
+- Clinic owner controls which staff can apply discounts
+- **Save as PDF** via browser print dialog (zero dependencies — clean output)
+- Bill preview with clinic logo, patient info, totals
+
+### F-Form (Clinical Findings)
+- Sections: Patient, History & Complaint, Vitals (6 fields), Examination, Diagnosis & Treatment
+- **AI ICD-10 suggestion** from chief complaint text
+- Today's patients shown first in dropdown
+- **Saved Forms tab** — browse all saved forms
+- **Print / Save PDF** — opens dedicated print window (browser → Save as PDF)
+- **Share** — native share API or clipboard copy
+- Auto-generated form number (`FF-00001`)
+- Clinic logo appears in printed form
+
+### PNDT 12-Column Register (Form F)
+- Matches the physical government form exactly
+- 12 columns: Sr. No., Reg. No., Date, Patient Name+Age, Address, Referred By, Living Children, LMP/Weeks, Non-Invasive Indication, Invasive Indication, Declaration Date, Result/Findings
+- Filter by month + year
+- Empty rows auto-filled to minimum 20 per page
+- Print-ready with radiologist signature lines
+
+### Test & Fee Manager
+- Clinic owner configures test categories (Sonography, X-Ray, Blood Test, CT Scan, MRI…)
+- Sub-tests per category: USG Obstetric ₹600 / ANC ₹500 / TVS ₹800 / ABD ₹500…
+- **Load Defaults** button pre-populates common Indian clinic tests
+- Fees auto-fill on patient registration
+
+### Staff Management
+- Add receptionist / lab handler / doctor with login credentials
+- **Click staff card** → detail modal with:
+  - 7-day activity bar chart
+  - Action summary (registered / started / completed)
+  - Recent activity log
+- Activate / deactivate accounts
+
+### Activity Audit Log
+- Every patient registration, status change, completion logged with timestamp
+- Filter by staff member and/or date
+- Per-staff summary cards (registered / started / completed counts)
+
+### Clinic Settings
+- **Clinic logo upload** (ImageKit) — used in F-Forms and Bills
+- **Profile photo upload** for clinic owner
+- Edit all clinic details (name, address, PNDT reg no, license, specialization)
+- **Discount permissions** — checkboxes to allow receptionist/lab handler to give discounts
+- Change password
+
+### Subscription & Notifications
+- Superadmin assigns plan (Free / Pro) + duration (1 / 6 / 12 months) per clinic
+- **Expiry warning bars**: amber at 30 days, red at 7 days — on clinic dashboard, settings, and admin panel
+- Superadmin sees per-clinic expiry banners on clinics list
+- Suspend / activate clinics (cascades to all staff)
+
+### Public Landing Page (`/`)
+- Hero with features, stats, mockup placeholder (add your screenshots)
+- Features grid (6 cards)
+- Pricing section (Free / Pro / Enterprise)
+- CTA + footer
+- Unauthenticated visitors only — logged-in users redirect to their dashboard
+
+---
+
+## Project Structure
+
+```
+medirecord/
 ├── backend/
-│   ├── src/
-│   │   ├── config/            # Database and service connections
-│   │   ├── controllers/       # Business logic for each module
-│   │   ├── models/            # Schema definitions
-│   │   ├── routes/            # API endpoint definitions
-│   │   └── middlewares/       # Security, Auth, and File handlers
-│   ├── public/                # Compiled static frontend for production
-│   └── server.js              # Application entry point
+│   ├── server.js                    # Entry point (keep-alive for Render free tier)
+│   ├── .env.example                 # All required env variables documented
+│   └── src/
+│       ├── app.js                   # Express app, all routes registered
+│       ├── config/
+│       │   ├── db.js                # MongoDB connection
+│       │   └── imagekit.js          # ImageKit lazy-init (safe if keys absent)
+│       ├── models/
+│       │   ├── User.model.js        # 5 roles, clinic ref, profileImage
+│       │   ├── Clinic.model.js      # clinicId, testCategories (sub-tests), logoUrl, discountRoles
+│       │   ├── Patient.model.js     # tokenNo, status workflow, fee, lmp, husbandName
+│       │   ├── FForm.model.js       # vitals, ICD-10, prescriptions, formNumber auto-gen
+│       │   ├── Bill.model.js        # line items, discount (flat/%), total auto-calc
+│       │   ├── Report.model.js      # diagnostic reports
+│       │   ├── Tracking.model.js    # visit tracking / overdue
+│       │   └── ActivityLog.model.js # every staff action logged
+│       ├── controllers/
+│       │   ├── auth.controller.js   # login, register, getMe, changePassword, setup-superadmin
+│       │   ├── clinic.controller.js # CRUD + staff + test categories + logo/discount settings
+│       │   ├── patient.controller.js# getTodayQueue, updateStatus, PNDT register, activity log
+│       │   ├── fform.controller.js  # F-Form CRUD, clinic-scoped
+│       │   ├── bill.controller.js   # Bill CRUD + stats
+│       │   ├── report.controller.js # Diagnostic reports
+│       │   ├── tracking.controller.js
+│       │   └── upload.controller.js # ImageKit upload/delete
+│       ├── routes/
+│       │   ├── auth.routes.js
+│       │   ├── clinic.routes.js     # /my/* routes BEFORE /:id (ordering critical)
+│       │   ├── patient.routes.js
+│       │   ├── fform.routes.js
+│       │   ├── bill.routes.js
+│       │   ├── report.routes.js
+│       │   ├── tracking.routes.js
+│       │   └── upload.routes.js
+│       └── middlewares/
+│           ├── auth.middleware.js   # authenticate, requireRole
+│           ├── upload.middleware.js # multer (memory storage, 5MB limit)
+│           └── error.middleware.js
 │
 └── frontend/
+    ├── public/
+    │   ├── logo.png                 # Full logo (icon + MediRecord text)
+    │   └── loginillustration.png    # Doctor illustration for login page
     └── src/
-        ├── features/          # Domain-driven feature modules
-        │   ├── auth/          # Authentication flows
-        │   ├── admin/         # Super Admin controls
-        │   ├── clinic/        # Clinic Owner dashboard
-        │   └── tracking/      # Patient lifecycle management
-        ├── components/        # Reusable UI components (Layout, Sidebar)
-        ├── styles/            # Global SCSS variables and design tokens
-        └── services/          # API communication layer
+        ├── App.jsx + AppRoutes.jsx  # Centralized routing, role guards
+        ├── services/api.js          # Axios instance, 401 interceptor
+        ├── styles/global.scss       # Design tokens, responsive breakpoints, utilities
+        ├── components/Layout/
+        │   ├── Sidebar.jsx          # Role-aware nav, logo.png, mobile close button
+        │   ├── MobileTopbar.jsx     # Hamburger + logo.png (mobile only)
+        │   ├── MobileNav.jsx        # Bottom tab bar (mobile only)
+        │   └── MainLayout.jsx       # Desktop sidebar + mobile overlay drawer
+        └── features/
+            ├── auth/                # LoginPage (clean card design, illustration)
+            ├── landing/             # Public landing page with pricing
+            ├── admin/               # Super admin: platform stats, clinic cards + detail popup
+            ├── clinic/              # Clinic owner: dashboard, patients, staff, activity, settings
+            ├── reception/           # Receptionist: dashboard, register patient (token+receipt)
+            ├── lab/                 # Lab handler: queue dashboard
+            ├── queue/               # Shared live queue (kanban cards, 15s auto-refresh)
+            ├── fform/               # F-Form with AI ICD-10, saved forms tab, PDF export
+            ├── billing/             # Bill creation with discounts, PDF/print
+            ├── pndt/                # 12-column PNDT register, print-ready
+            ├── tests/               # Test & fee manager with Load Defaults
+            ├── tracking/            # Visit tracking (legacy)
+            ├── reporting/           # Diagnostic reports (legacy)
+            └── profile/             # Profile + change password
 ```
 
 ---
 
-## 🔥 Key Features
+## API Reference
 
-- **Multi-Role Access Control**: Distinct dashboards for Super Admins, Clinic Owners, Doctors, and Staff.
-- **Smart Patient Registration**: Quick Aadhaar-based registration and profile management.
-- **Clinical Lifecycle Tracking**: Monitor patient visits with smart overdue detection and priority flags.
-- **Automated F-Forms**: Digital templates for clinical findings, simplifying data entry.
-- **Diagnostic Reporting**: Generate, store, and manage medical reports with ImageKit integration.
-- **Beautiful UI/UX**: Premium styling with dark-mode optimized colors and smooth transitions.
-- **Production Ready**: Built-in logic to serve the frontend from the backend for single-service deployment.
+### Auth
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| POST | `/api/auth/setup-superadmin` | Public (once) | Create first superadmin |
+| POST | `/api/auth/login` | Public | Login, returns JWT + user |
+| GET  | `/api/auth/me` | Auth | Get current user + clinic |
+| PATCH | `/api/auth/profile` | Auth | Update name, phone, profileImage |
+| PATCH | `/api/auth/change-password` | Auth | Change password |
+
+### Clinics (Superadmin)
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| GET  | `/api/clinics/stats` | superadmin | Platform stats |
+| GET  | `/api/clinics` | superadmin | All clinics with patient/staff counts |
+| POST | `/api/clinics` | superadmin | Register clinic + create owner account |
+| PATCH | `/api/clinics/:id` | superadmin | Update clinic |
+| PATCH | `/api/clinics/:id/toggle` | superadmin | Suspend/activate clinic + all staff |
+
+### Clinics (Owner)
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| GET  | `/api/clinics/my/clinic` | clinic_owner | My clinic details |
+| PATCH | `/api/clinics/my/clinic` | clinic_owner | Update clinic info |
+| PATCH | `/api/clinics/my/logo` | clinic_owner | Logo, profile photo, discount settings |
+| GET  | `/api/clinics/my/staff` | clinic_owner | All staff |
+| POST | `/api/clinics/my/staff` | clinic_owner | Add staff member |
+| PATCH | `/api/clinics/my/staff/:id/toggle` | clinic_owner | Activate/deactivate staff |
+| GET  | `/api/clinics/my/tests` | owner+staff | Test categories + fees |
+| POST | `/api/clinics/my/tests` | clinic_owner | Add/update test category |
+| DELETE | `/api/clinics/my/tests/:catId` | clinic_owner | Remove test category |
+
+### Patients
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| GET  | `/api/patients/today` | All clinic | Today's queue with stats |
+| GET  | `/api/patients/stats` | All clinic | Total, this week, today counts |
+| GET  | `/api/patients/pndt` | All clinic | PNDT register by month/year |
+| GET  | `/api/patients/activity` | All clinic | Activity audit log |
+| GET  | `/api/patients` | All clinic | All patients (search + date filter) |
+| POST | `/api/patients` | receptionist+ | Register patient, auto token |
+| PATCH | `/api/patients/:id/status` | lab_handler+ | Update queue status |
+| DELETE | `/api/patients/:id` | clinic_owner+ | Delete patient |
+
+### F-Forms
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| GET  | `/api/fform` | All clinic | All forms (clinic-scoped) |
+| GET  | `/api/fform/:id` | All clinic | Single form with full populate |
+| GET  | `/api/fform/patient/:patientId` | All clinic | Forms for a patient |
+| POST | `/api/fform` | All clinic | Create F-Form |
+| PATCH | `/api/fform/:id` | All clinic | Update form |
+
+### Bills
+| Method | Route | Access | Description |
+|--------|-------|--------|-------------|
+| GET  | `/api/bills/stats` | All clinic | Today count + revenue totals |
+| GET  | `/api/bills` | All clinic | Bills (date filter) |
+| GET  | `/api/bills/:id` | All clinic | Single bill with full populate |
+| POST | `/api/bills` | receptionist+ | Create bill with discount |
+| PATCH | `/api/bills/:id` | receptionist+ | Update bill |
+| DELETE | `/api/bills/:id` | clinic_owner+ | Delete bill |
 
 ---
 
-## 📅 Roadmap: The "Next Plan"
+## Setup & First Run
 
-Our upcoming release focuses on **Subscription Management** controlled by the Super Admin panel.
-
-### 💳 New Subscription Model
-We are moving away from fixed plans to a flexible **Time-Based Subscription** model:
-- **Available Tiers**:
-  - `Free`: Essential features for small clinics.
-  - `Pro`: Full feature set including reports and custom F-Forms.
-  - *(Enterprise plan has been removed for simplicity)*
-
-- **Duration Options**:
-  - `1 Month`
-  - `6 Months`
-  - `1 Year`
-
-### ⚙️ Automation Logic
-- **Automatic Expiry Tracking**: When a Super Admin registers a clinic, the plan's `EndDate` is automatically calculated from the start date.
-- **Smart Notifications**:
-  - **Days Remaining**: Clinic owners will see a countdown of days left in their subscription.
-  - **In-App Alerts**: Notification banners will appear when the plan is within 7 days of expiry.
-  - **Automatic Locking**: Access to premium features will be restricted automatically once the `EndDate` is reached.
-
----
-
-## 🚢 Quick Start & Setup
-
-### 1. Prerequisites
-- Node.js (v18+)
-- MongoDB (Local or Atlas)
-- ImageKit Account
-
-### 2. Installation
+### 1. Clone & Install
 ```bash
-# Setup Backend
+git clone https://github.com/princechouhan19/medirecord.git
+cd medirecord
+
+# Install all dependencies
+npm run install-all   # runs npm install in both /backend and /frontend
+```
+
+### 2. Configure Environment
+```bash
 cd backend
-npm install
-# Create .env from .env.example
-npm run dev
-
-# Setup Frontend
-cd ../frontend
-npm install
-npm run dev
+cp .env.example .env
 ```
 
-### 3. First-Time configuration
-#### A. Create Superadmin (one-time only)
+Edit `.env`:
+```env
+PORT=5000
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/medirecord
+JWT_SECRET=your-random-64-char-secret-here
+JWT_EXPIRES_IN=7d
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+
+# Optional — for logo/photo uploads
+IMAGEKIT_PUBLIC_KEY=your_key
+IMAGEKIT_PRIVATE_KEY=your_key
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_id
+
+# Render keep-alive (set to your deployed URL)
+RENDER_EXTERNAL_URL=https://medirecord-x0jg.onrender.com
+```
+
+### 3. Run Locally
 ```bash
-POST /api/auth/setup-superadmin
+# Terminal 1 — Backend
+cd backend && npm run dev       # http://localhost:5000
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev      # http://localhost:5173 (proxied to :5000)
+```
+
+### 4. Create First Superadmin (one time)
+```bash
+curl -X POST http://localhost:5000/api/auth/setup-superadmin \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Prince Chouhan","email":"admin@medirecord.in","password":"yourpassword"}'
+```
+
+Or use Postman / Thunder Client.
+
+### 5. First-Time Clinic Setup Flow
+1. Login as superadmin → `/admin/clinics` → **Register Clinic**
+   - Fill clinic details, assign Clinic ID (e.g. `LIFE-001`), choose plan + duration
+   - Enter owner email + password — owner account created automatically
+2. Login as clinic owner → `/clinic/tests` → **Load Defaults** (adds Sonography, X-Ray, Blood Test etc.)
+3. `/clinic/staff` → Add Receptionist + Lab Handler
+4. Receptionist logs in → `/reception/register` → registers first patient
+5. Lab Handler logs in → `/lab/queue` → picks up patient, marks complete
+
+---
+
+## Deployment (Render)
+
+MediRecord is designed to deploy as a **single Render Web Service**:
+
+| Setting | Value |
+|---------|-------|
+| **Build Command** | `npm run build` |
+| **Start Command** | `npm start` |
+| **Root Directory** | *(leave blank — uses root package.json)* |
+
+The root `package.json` orchestrates:
+- `npm run build` → runs `vite build` in `/frontend`, output goes to `/backend/public`
+- `npm start` → starts Express which serves both API and the built React app
+
+### Required Environment Variables on Render
+```
+MONGODB_URI
+JWT_SECRET
+JWT_EXPIRES_IN=7d
+NODE_ENV=production
+RENDER_EXTERNAL_URL=https://your-app.onrender.com
+```
+
+---
+
+## Version History
+
+### v1 — Initial Release
+- Basic patient registration (Aadhaar-based)
+- Simple dashboard with patient list, reports, tracking
+- F-Form with ICD-10 AI suggestions
+- Login page, JWT auth
+- Single role (staff)
+
+### v2 — Multi-Clinic Architecture
+- **3-tier roles**: superadmin, clinic_owner, staff/doctor
+- Super Admin dashboard: register clinics, manage subscriptions
+- Clinic Owner dashboard: staff management, clinic settings
+- F-Form improvements: saved forms tab, print/download/share
+- PNDT 12-column register
+- Production cleanup: removed demo Aadhaar numbers, validated inputs
+
+### v3 — 4-Tier Role System + Core Features
+- **4th role**: `receptionist` and `lab_handler` (renamed from staff)
+- **Live Queue**: kanban board, 15-second auto-refresh, role-gated start/complete
+- **Register Patient**: loads clinic test categories, auto-fills fee, generates token, printable receipt
+- **Test & Fee Manager**: configure Sonography > ANC/TVS/USG/ABD with prices
+- **Activity Audit Log**: every action tracked, per-staff analytics
+- **Billing System**: Bill model, create bills with discount, BillView print
+- **PNDT Register**: 12-column Form F, filterable by month/year
+- Reception Dashboard, Lab Dashboard, Clinic Patients page
+- Admin clinics page: clickable clinic cards with detail popup
+- Subscription expiry notification banners
+
+### v4 — UI Polish + Landing Page + PDF
+- **Login page redesign**: clean white card + solid background (no gradient), `loginillustration.png`
+- **Sidebar**: uses full `logo.png` image — no more hardcoded brand text
+- **Mobile sidebar fix**: close via backdrop click, close button, and route change
+- **MobileTopbar**: `logo.png` only, no duplicate text
+- **Landing page** (`/`): hero, features, pricing (Free/Pro/Enterprise), CTA
+- **PDF export**: F-Form and Bill "Save PDF" opens browser print window → Save as PDF (no deps)
+- `ClinicSettingsPage`: clinic logo upload, owner profile photo, discount role permissions
+- `ClinicStaffPage`: click card → modal with 7-day activity bar chart + recent logs
+- Responsive: mobile nav, topbar, sidebar overlay, collapsing form grids
+
+---
+
+## Responsive Design
+
+| Breakpoint | Layout |
+|-----------|--------|
+| `> 1024px` (Desktop) | Fixed sidebar + full content area |
+| `769–1024px` (Tablet) | Sidebar + compact content padding |
+| `< 768px` (Mobile) | Hidden sidebar → overlay drawer, sticky topbar, bottom nav tabs |
+
+**Mobile-specific components:**
+- `MobileTopbar` — sticky top bar with hamburger + `logo.png`
+- `MobileNav` — bottom tab navigation (5 key routes per role)
+- Sidebar — slide-in overlay, close on backdrop tap or route change
+
+---
+
+## Data Architecture Notes
+
+### Clinic `testCategories` (Embedded Sub-documents)
+```js
+clinic.testCategories = [
+  {
+    name: "Sonography",
+    basePrice: 0,
+    isActive: true,
+    subTests: [
+      { name: "USG Obstetric", price: 600 },
+      { name: "ANC",           price: 500 },
+      { name: "TVS",           price: 800 },
+    ]
+  }
+]
+```
+This Mongoose embedded array approach avoids a separate collection and loads fee data instantly with the clinic object.
+
+### Patient Queue Model
+```js
 {
-  "name": "Prince Chouhan",
-  "email": "admin@medirecord.in",
-  "password": "your-secure-password"
+  tokenNo: 42,          // auto-assigned daily counter
+  status: "in_progress",// waiting → in_progress → completed
+  visitDate: Date,       // used for daily scoping
+  fee: 600,
+  isPaid: true,
+  paymentMode: "upi",
+  receiptNo: "RC-829341",
+  lmp: Date,             // last menstrual period for OBS
+  husbandName: "...",
+  referredBy: "Dr. Mehta",
+  assignedTo: ObjectId,  // lab handler who picked up
+  completedAt: Date,
 }
 ```
 
-#### B. Setup Clinic
-1. Login as Superadmin → Go to `/admin/clinics` → Register a Clinic.
-2. Fill clinic details + PNDT Reg No.
-3. Assign a Clinic ID (e.g. `MEDI-001`).
-4. Enter owner name, email, password (this creates the Clinic Owner account).
-
-#### C. Clinic Configuration
-1. Clinic Owner Logs In → `/clinic/tests` → Add Test Categories.
-2. Add "Sonography" → Sub-tests: ANC (₹500), USG Obs (₹600)... or click "⚡ Load Defaults".
-3. Clinic Owner → `/clinic/staff` → Add Staff (Receptionist, Lab Handler, Doctors).
-
----
-
-## 📋 Application Sitemap
-
-| URL | Role | Description |
-|-----|------|-------------|
-| `/admin` | superadmin | Platform stats, clinic list |
-| `/admin/clinics` | superadmin | Register + manage clinics |
-| `/clinic` | clinic_owner | Dashboard with live stats |
-| `/clinic/queue` | clinic_owner | Live patient queue |
-| `/clinic/staff` | clinic_owner | Add/manage staff |
-| `/clinic/tests` | clinic_owner | Test categories + fee config |
-| `/clinic/pndt` | clinic_owner | 12-column PNDT register |
-| `/clinic/activity` | clinic_owner | Staff audit log |
-| `/reception` | receptionist | Daily dashboard |
-| `/reception/register` | receptionist | Register patient + billing |
-| `/reception/queue` | receptionist | Today's queue view |
-| `/reception/fform` | receptionist | Fill F-Form |
-| `/lab` | lab_handler | Pending patient queue |
-| `/lab/queue` | lab_handler | Full queue + status actions |
+### Bill Model
+```js
+{
+  billNo: "BILL-00042",
+  items: [{ description: "USG Obstetric", amount: 600 }],
+  subtotal: 600,
+  discountType: "percent",  // "flat" | "percent"
+  discountValue: 10,
+  discountAmt: 60,
+  total: 540,
+  isPaid: true,
+  paymentMode: "cash"
+}
+```
+`pre('save')` middleware auto-calculates subtotal, discountAmt, and total.
 
 ---
 
-## 🧾 Patient Workflow
-
-1. **Registration**: Receptionist registers patient → Auto token # assigned → Test fee auto-filled → Receipt printable → Patient appears in "Waiting" queue.
-2. **Procedure**: Lab Handler picks up patient → Click "Start" (In Progress) → Runs test → Click "Complete" (Completed) → Activity logged.
-3. **Documentation**: Receptionist fills F-Form → Select patient → Fill findings → Save → View → Print/Download.
-
----
-
-## 📝 PNDT Register Compliance (Form F)
-Matches the physical 12-column format required by the government:
-- Sr. No., Registration No., Date, Patient Name+Age, Address, Referred By, Living Children, LMP/Weeks, Indication, Declaration Date, Result/Findings.
-- Filter by month/year, then click **Print** for a court-ready register.
-
----
-
-## 🌐 Deployment (Render.com)
-
-MediRecord is optimized for deployment as a single **Web Service** on Render:
-1. Run `npm run build` in the **frontend**.
-2. The build output is automatically copied to `backend/public`.
-3. Push to GitHub.
-4. On Render, set the root directory to `backend` and use `node server.js` as the start command.
-
----
-
-## 👥 Contributors
+## Contributors
 
 - **Lead Developer**: [Prince Chouhan](https://github.com/princechouhan19)
-- **Contributors**: Ronak, Pooja
+- **Live**: https://medirecord-x0jg.onrender.com
 
 ---
+
+*MediRecord — Built for Indian Clinics* 🇮🇳

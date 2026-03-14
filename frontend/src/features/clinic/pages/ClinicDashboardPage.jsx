@@ -45,6 +45,23 @@ export default function ClinicDashboardPage() {
       </div>
 
       {/* Main stats */}
+      {/* Subscription expiry notification */}
+      {(() => {
+        const sub = user?.clinic?.subscription || {}
+        if (!sub.endDate) return null
+        const days = Math.ceil((new Date(sub.endDate) - new Date()) / 86400000)
+        if (days > 30) return null
+        return (
+          <div className={`notif-bar notif-bar--${days<=7?'danger':'warn'}`} style={{marginBottom:16}}>
+            <span className="notif-bar__icon">⚠️</span>
+            <span className="notif-bar__text">
+              Subscription expires in <strong>{days} day{days!==1?'s':''}</strong> ({new Date(sub.endDate).toLocaleDateString('en-IN')}).
+              Contact your admin to renew.
+            </span>
+          </div>
+        )
+      })()}
+
       <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px',marginBottom:'24px'}}>
         {[
           {label:'Total Patients', val:pStats.total,        link:'/clinic/patients', color:'var(--teal)'},

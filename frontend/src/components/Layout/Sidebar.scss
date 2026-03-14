@@ -4,60 +4,67 @@
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column; z-index: 100; overflow-y: auto;
 
+  // Mobile slide-in version
+  &--mobile {
+    position: relative; height: 100vh; z-index: auto;
+    box-shadow: var(--shadow-lg); width: min(var(--sidebar-w), 85vw);
+  }
+
   &__brand {
-    display: flex; align-items: center; gap: 10px;
-    padding: 18px 16px 14px; border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    &-mark {
-      width: 34px; height: 34px; background: var(--teal);
-      border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      svg { width: 17px; height: 17px; }
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+    &-logo-full {
+      flex: 1; min-width: 0;
+      img { height: 32px; width: auto; max-width: 100%; object-fit: contain; display: block; filter: brightness(1); }
     }
-    &-name { font-size: 16px; font-weight: 800; color: var(--text-1); span { color: var(--teal); } }
+  }
+  &__clinic-tag {
+    width: 100%; font-size: 9.5px; color: var(--text-2); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding: 0 2px 2px;
+  }
+
+  &__close {
+    width: 28px; height: 28px; border-radius: 50%; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3); flex-shrink: 0; transition: all var(--ease);
+    &:hover { background: var(--red-bg); color: var(--red); }
   }
 
   &__clinic {
-    font-size: 11px; color: var(--text-2); font-weight: 500;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;
+    font-size: 10px; color: var(--text-2); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
   &__role {
-    margin: 10px 12px; border-radius: 6px; padding: 5px 10px;
-    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    margin: 8px 12px; border-radius: 6px; padding: 4px 10px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
     text-align: center; flex-shrink: 0;
   }
 
   &__nav {
-    flex: 1; padding: 4px 8px; display: flex; flex-direction: column; gap: 1px;
+    flex: 1; padding: 4px 8px; display: flex; flex-direction: column; gap: 1px; overflow-y: auto;
   }
 
   &__link {
     display: flex; align-items: center; gap: 9px;
     padding: 9px 10px; border-radius: var(--radius-sm);
     color: var(--text-2); font-size: 13px; font-weight: 500;
-    transition: all var(--ease); position: relative;
+    transition: all var(--ease);
 
-    &-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    &-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
       svg { width: 16px; height: 16px; } }
 
     &:hover { background: var(--bg); color: var(--text-1); }
-
-    &--active {
-      background: var(--teal-light); color: var(--teal-dark); font-weight: 700;
-      .sidebar__link-icon svg { stroke: var(--teal); }
-    }
+    &--active { background: var(--teal-light); color: var(--teal-dark); font-weight: 700;
+      .sidebar__link-icon svg { stroke: var(--teal); } }
   }
 
   &__live-dot {
-    margin-left: auto; width: 7px; height: 7px;
-    background: var(--green); border-radius: 50%;
-    animation: pulse 2s infinite;
+    margin-left: auto; width: 7px; height: 7px; background: var(--green);
+    border-radius: 50%; animation: sidebar-pulse 2s infinite; flex-shrink: 0;
   }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .3; }
-  }
+  @keyframes sidebar-pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
 
   &__footer {
     border-top: 1px solid var(--border); padding: 10px 8px; flex-shrink: 0;
@@ -74,10 +81,11 @@
     background: var(--teal-light); color: var(--teal-dark);
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 13px; flex-shrink: 0;
+    &--img { object-fit: cover; }
   }
 
-  &__user-name  { font-size: 12.5px; font-weight: 700; color: var(--text-1); }
-  &__user-email { font-size: 11px; color: var(--text-3); }
+  &__user-name  { font-size: 12px; font-weight: 700; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__user-email { font-size: 10.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   &__logout {
     display: flex; align-items: center; gap: 7px;

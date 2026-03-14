@@ -1,191 +1,111 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { gsap } from "gsap";
-import { useAuth } from "../../auth/hooks/useAuth";
-import api from "../../../services/api";
-import "../styles/clinic.scss";
+import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { gsap } from 'gsap'
+import { useAuth } from '../../auth/hooks/useAuth'
+import api from '../../../services/api'
 
 export default function ClinicDashboardPage() {
-  const { user } = useAuth();
-  const [clinic, setClinic] = useState(null);
-  const [patients, setPatients] = useState([]);
-  const [patientStats, setPatientStats] = useState({ total: 0, thisWeek: 0 });
-  const [reportCount, setReportCount] = useState(0);
-  const [schedule, setSchedule] = useState({ upcoming: 0, overdue: 0 });
-  const [staff, setStaff] = useState([]);
-  const headerRef = useRef(null);
+  const { user } = useAuth()
+  const [queue, setQueue]   = useState({total:0,waiting:0,in_progress:0,completed:0})
+  const [pStats, setPStats] = useState({total:0,thisWeek:0,today:0})
+  const [recent, setRecent] = useState([])
+  const [staff, setStaff]   = useState([])
+  const ref = useRef(null)
 
   useEffect(() => {
-    gsap.fromTo(
-      headerRef.current,
-      { y: -20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6 },
-    );
-    gsap.fromTo(
-      ".clinic-stat",
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, stagger: 0.1, delay: 0.2 },
-    );
-
+    gsap.fromTo(ref.current,{y:-16,opacity:0},{y:0,opacity:1,duration:.5})
+    gsap.fromTo('.dash-stat',{y:20,opacity:0},{y:0,opacity:1,stagger:.08,delay:.2,duration:.4})
     Promise.all([
-      api.get("/clinics/my/clinic"),
-      api.get("/patients?limit=5"),
-      api.get("/patients/stats"),
-      api.get("/reports/count"),
-      api.get("/tracking/stats"),
-      api.get("/clinics/my/staff"),
-    ])
-      .then(([cl, p, ps, r, s, st]) => {
-        setClinic(cl.data.clinic);
-        setPatients(p.data.patients?.slice(0, 5) || []);
-        setPatientStats(ps.data);
-        setReportCount(r.data.count);
-        setSchedule(s.data);
-        setStaff(st.data.staff || []);
-      })
-      .catch(console.error);
-  }, []);
+      api.get('/patients/today'),
+      api.get('/patients/stats'),
+      api.get('/clinics/my/staff'),
+    ]).then(([q,ps,st])=>{
+      setQueue(q.data.stats||{})
+      setRecent((q.data.patients||[]).slice(0,6))
+      setPStats(ps.data||{})
+      setStaff(st.data.staff||[])
+    }).catch(()=>{})
+  },[])
 
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const clinic = user?.clinic
+  const ROLE_C = { receptionist:'teal', lab_handler:'blue', doctor:'green', clinic_owner:'purple' }
 
   return (
-    <div className="clinic-page">
-      <div className="clinic-header" ref={headerRef}>
+    <div style={{maxWidth:1300}}>
+      <div className="page-header" ref={ref}>
         <div>
-          <div className="clinic-header__greeting">
-            Welcome back, {user?.name}
-          </div>
-          <h1>{clinic?.name || "My Clinic"}</h1>
-          <p className="clinic-header__sub">{dateStr}</p>
+          <div style={{fontSize:'12px',color:'var(--text-3)',marginBottom:'3px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.06em'}}>Clinic Owner Dashboard</div>
+          <h1>{clinic?.name || 'My Clinic'}</h1>
+          <p>{new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
         </div>
-        <div className="clinic-header__badge">
-          <span
-            className={`badge badge--${clinic?.plan === "enterprise" ? "warning" : "primary"}`}
-          >
-            {clinic?.plan?.toUpperCase() || "BASIC"} Plan
-          </span>
-          <span
-            className={`badge badge--${clinic?.isActive ? "success" : "danger"}`}
-          >
-            {clinic?.isActive ? "Active" : "Suspended"}
-          </span>
+        <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+          {clinic?.subscription?.plan&&<span className="badge badge--teal">{clinic.subscription.plan.toUpperCase()}</span>}
+          <Link to="/clinic/queue" className="btn btn--primary">📡 Live Queue</Link>
         </div>
       </div>
 
-      <div className="clinic-stats">
+      {/* Main stats */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'12px',marginBottom:'24px'}}>
         {[
-          {
-            label: "Total Patients",
-            value: patientStats.total,
-            sub: `+${patientStats.thisWeek} this week`,
-            link: "/clinic/patients",
-          },
-          {
-            label: "Reports",
-            value: reportCount,
-            sub: "Generated",
-            link: "/clinic/reports",
-          },
-          {
-            label: "Upcoming Visits",
-            value: schedule.upcoming,
-            sub: "Next 7 days",
-            link: "/clinic/tracking",
-          },
-          {
-            label: "Overdue Visits",
-            value: schedule.overdue,
-            sub: "Need attention",
-            link: "/clinic/tracking",
-            alert: true,
-          },
-          {
-            label: "Staff Members",
-            value: staff.length,
-            sub: "Active users",
-            link: "/clinic/staff",
-          },
-        ].map((s) => (
-          <Link
-            to={s.link}
-            key={s.label}
-            className={`clinic-stat ${s.alert ? "clinic-stat--alert" : ""}`}
-          >
-            <div className="clinic-stat__value">{s.value}</div>
-            <div className="clinic-stat__label">{s.label}</div>
-            <div className="clinic-stat__sub">{s.sub}</div>
+          {label:'Total Patients', val:pStats.total,        link:'/clinic/patients', color:'var(--teal)'},
+          {label:"Today's Queue",  val:queue.total,         link:'/clinic/queue',    color:'var(--blue)'},
+          {label:'Waiting Now',    val:queue.waiting,       link:'/clinic/queue',    color:'#D97706'},
+          {label:'In Progress',    val:queue.in_progress,   link:'/clinic/queue',    color:'var(--blue)'},
+          {label:'Completed Today',val:queue.completed,     link:'/clinic/queue',    color:'var(--green)'},
+        ].map(s=>(
+          <Link key={s.label} to={s.link} className="card dash-stat" style={{padding:'16px',textDecoration:'none',borderTop:`3px solid ${s.color}`,display:'block',transition:'transform .15s'}}>
+            <div style={{fontFamily:'var(--font-num)',fontSize:'28px',fontWeight:900,color:s.color}}>{s.val??0}</div>
+            <div style={{fontSize:'12px',color:'var(--text-2)',fontWeight:600,marginTop:'2px'}}>{s.label}</div>
           </Link>
         ))}
       </div>
 
-      <div className="clinic-panels">
-        <div className="card clinic-panel">
-          <div className="panel-header">
-            <h3>Recent Patients</h3>
-            <Link to="/clinic/patients" className="panel-link">
-              View all →
-            </Link>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:'20px'}}>
+        {/* Today's queue */}
+        <div className="card" style={{overflow:'hidden'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'14px 18px',borderBottom:'1px solid var(--border)'}}>
+            <h3 style={{fontSize:'14px',fontWeight:700}}>Today's Patients</h3>
+            <Link to="/clinic/queue" style={{color:'var(--teal)',fontSize:'12px',fontWeight:600}}>Live view →</Link>
           </div>
-          <div className="patient-list">
-            {patients.map((p) => (
-              <div key={p._id} className="patient-row">
-                <div className="patient-row__avatar">{p.name[0]}</div>
-                <div className="patient-row__info">
-                  <span className="patient-row__name">{p.name}</span>
-                  <span className="patient-row__meta">
-                    {p.gender}, {p.age} yrs — {p.testType}
-                  </span>
-                </div>
-                <span className="patient-row__phone">{p.phone}</span>
-              </div>
-            ))}
-            {patients.length === 0 && (
-              <p className="empty-state">No patients yet</p>
-            )}
-          </div>
+          <table className="data-table">
+            <thead><tr><th>#</th><th>Patient</th><th>Test</th><th>Fee</th><th>By</th><th>Status</th></tr></thead>
+            <tbody>
+              {recent.map(p=>(
+                <tr key={p._id}>
+                  <td className="td-mono">#{String(p.tokenNo).padStart(3,'0')}</td>
+                  <td><div className="td-name">{p.name}</div><div className="td-muted">{p.age}y · {p.gender}</div></td>
+                  <td><div style={{fontSize:'12.5px'}}>{p.testName}</div><div className="td-muted">{p.testCategory}</div></td>
+                  <td><span style={{fontFamily:'var(--font-num)',fontWeight:700}}>₹{p.fee}</span></td>
+                  <td className="td-muted">{p.registeredBy?.name?.split(' ')[0]||'—'}</td>
+                  <td><span className={`badge badge--${p.status==='waiting'?'amber':p.status==='in_progress'?'blue':p.status==='completed'?'green':'gray'}`}>{p.status.replace('_',' ')}</span></td>
+                </tr>
+              ))}
+              {recent.length===0&&<tr><td colSpan={6} className="empty-row">No patients today yet</td></tr>}
+            </tbody>
+          </table>
         </div>
 
-        <div className="card clinic-panel">
-          <div className="panel-header">
-            <h3>Staff Members</h3>
-            <Link to="/clinic/staff" className="panel-link">
-              Manage →
-            </Link>
+        {/* Staff */}
+        <div className="card" style={{padding:'18px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px',paddingBottom:'10px',borderBottom:'1px solid var(--border)'}}>
+            <h3 style={{fontSize:'14px',fontWeight:700}}>Staff ({staff.length})</h3>
+            <Link to="/clinic/staff" style={{color:'var(--teal)',fontSize:'12px',fontWeight:600}}>Manage →</Link>
           </div>
-          <div className="staff-list">
-            {staff.map((s) => (
-              <div key={s._id} className="staff-row">
-                <div
-                  className="patient-row__avatar"
-                  style={{ background: "#EDE9FE", color: "#7C3AED" }}
-                >
-                  {s.name[0]}
+          <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+            {staff.map(s=>(
+              <div key={s._id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'8px',borderRadius:'8px',background:'var(--bg)'}}>
+                <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'var(--teal-light)',color:'var(--teal-dark)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'13px',flexShrink:0}}>{s.name[0]}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:'13px',fontWeight:600}}>{s.name}</div>
+                  <span className={`badge badge--${ROLE_C[s.role]||'gray'}`} style={{fontSize:'10px'}}>{s.role?.replace('_',' ')}</span>
                 </div>
-                <div className="patient-row__info">
-                  <span className="patient-row__name">{s.name}</span>
-                  <span className="patient-row__meta">{s.email}</span>
-                </div>
-                <span
-                  className={`badge badge--${s.isActive ? "success" : "danger"}`}
-                >
-                  {s.role}
-                </span>
+                <span className={`badge badge--${s.isActive?'green':'red'}`}>{s.isActive?'Active':'Off'}</span>
               </div>
             ))}
-            {staff.length === 0 && (
-              <p className="empty-state">
-                No staff added yet. <Link to="/clinic/staff">Add staff →</Link>
-              </p>
-            )}
+            {staff.length===0&&<div style={{textAlign:'center',color:'var(--text-3)',padding:'20px',fontSize:'13px'}}>No staff yet. <Link to="/clinic/staff" style={{color:'var(--teal)'}}>Add staff →</Link></div>}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

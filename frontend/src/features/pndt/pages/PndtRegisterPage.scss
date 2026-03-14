@@ -1,0 +1,52 @@
+.pndt-page { max-width: 100%; }
+
+.pndt-select {
+  padding: 8px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; outline: none;
+  font-family: var(--font-ui); background: var(--surface);
+  &:focus { border-color: var(--teal); }
+}
+
+.pndt-wrapper { padding: 0; overflow: hidden; }
+
+.pndt-title {
+  padding: 16px 20px; background: var(--teal); color: white; text-align: center;
+  &__main { font-size: 16px; font-weight: 800; }
+  &__sub  { font-size: 12px; opacity: .85; margin-top: 3px; }
+  &__count { font-size: 12px; margin-top: 6px; background: rgba(255,255,255,.2); display: inline-block; padding: 2px 12px; border-radius: 100px; }
+}
+
+.pndt-scroll { overflow-x: auto; }
+
+.pndt-table {
+  width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1100px;
+  th {
+    background: #F0F9F9; color: var(--teal-dark); font-weight: 700;
+    font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
+    padding: 8px 6px; border: 1px solid #CBD5E1; text-align: center; white-space: nowrap;
+  }
+  td {
+    padding: 8px 6px; border: 1px solid #E2E8F0; vertical-align: top;
+    font-size: 12px; color: var(--text-1);
+  }
+}
+
+.pndt-row--even td { background: #FAFCFF; }
+.pndt-td--center  { text-align: center; }
+.pndt-td--num     { font-family: var(--font-num); font-weight: 700; color: var(--text-3); width: 36px; }
+.pndt-td--mono    { font-family: var(--font-num); font-size: 11px; }
+.pndt-td--nowrap  { white-space: nowrap; }
+.pndt-tick        { font-size: 16px; color: var(--teal); }
+
+.pndt-footer {
+  display: flex; justify-content: space-between; padding: 24px 40px;
+  border-top: 1px solid var(--border);
+  &__sig { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
+  &__sig-line { width: 160px; height: 1px; background: var(--text-1); margin-bottom: 4px; }
+}
+
+@media print {
+  .sidebar, .page-header, .pndt-page > :not(.pndt-wrapper) { display: none !important; }
+  .main-layout__content { margin: 0 !important; padding: 0 !important; }
+  .pndt-wrapper { box-shadow: none; border: none; }
+}

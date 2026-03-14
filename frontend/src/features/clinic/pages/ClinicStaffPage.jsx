@@ -1,202 +1,135 @@
-import { useState, useEffect } from "react";
-import api from "../../../services/api";
-import "../styles/clinic.scss";
+import { useState, useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import api from '../../../services/api'
 
-const ROLES = ["staff", "doctor"];
-const defaultForm = {
-  name: "",
-  email: "",
-  password: "",
-  role: "staff",
-  phone: "",
-};
+const ROLES = [
+  { val:'receptionist', label:'Receptionist (Staff 1)', desc:'Registers patients, fills F-Form, collects fees' },
+  { val:'lab_handler',  label:'Lab Handler (Staff 2)',  desc:'Takes patients, runs tests, marks complete' },
+  { val:'doctor',       label:'Doctor',                 desc:'Referenced doctor, can view patient records' },
+]
+
+const ROLE_COLOR = { receptionist:'teal', lab_handler:'blue', doctor:'green', clinic_owner:'purple' }
+const ROLE_LABEL = { receptionist:'Receptionist', lab_handler:'Lab Handler', doctor:'Doctor', clinic_owner:'Clinic Owner' }
+
+const DEF = { name:'', email:'', password:'', role:'receptionist', phone:'' }
 
 export default function ClinicStaffPage() {
-  const [staff, setStaff] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(defaultForm);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [staff, setStaff]       = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm]   = useState(DEF)
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
+  const ref = useRef(null)
 
-  useEffect(() => {
-    fetchStaff();
-  }, []);
+  useEffect(()=>{ gsap.fromTo(ref.current,{y:-16,opacity:0},{y:0,opacity:1,duration:.5}); fetchStaff() },[])
 
   const fetchStaff = async () => {
-    const res = await api.get("/clinics/my/staff");
-    setStaff(res.data.staff || []);
-  };
+    try { const r = await api.get('/clinics/my/staff'); setStaff(r.data.staff||[]) } catch(e){}
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await api.post("/clinics/my/staff", form);
-      setShowModal(false);
-      setForm(defaultForm);
-      fetchStaff();
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    e.preventDefault(); setError(''); setLoading(true)
+    try { await api.post('/clinics/my/staff',form); setShowModal(false); setForm(DEF); fetchStaff() }
+    catch(err){ setError(err.response?.data?.error||'Failed') }
+    finally{ setLoading(false) }
+  }
 
   const handleToggle = async (userId) => {
-    await api.patch(`/clinics/my/staff/${userId}/toggle`);
-    fetchStaff();
-  };
+    await api.patch(`/clinics/my/staff/${userId}/toggle`); fetchStaff()
+  }
 
-  const f = (key) => ({
-    value: form[key],
-    onChange: (e) => setForm({ ...form, [key]: e.target.value }),
-  });
+  const f = k => ({ value:form[k], onChange:e=>setForm({...form,[k]:e.target.value}) })
 
   return (
-    <div className="clinic-page">
-      <div className="clinic-header">
-        <div>
-          <h1>Staff Management</h1>
-          <p>Manage your clinic team members</p>
-        </div>
-        <button className="btn btn--primary" onClick={() => setShowModal(true)}>
-          + Add Staff
-        </button>
+    <div style={{maxWidth:1000}}>
+      <div className="page-header" ref={ref}>
+        <div><h1>Staff Management</h1><p>Manage your clinic team — receptionists, lab handlers, and doctors</p></div>
+        <button className="btn btn--primary" onClick={()=>setShowModal(true)}>+ Add Staff Member</button>
       </div>
 
-      <div className="staff-grid">
-        {staff.map((s) => (
-          <div
-            key={s._id}
-            className={`card staff-card ${!s.isActive ? "staff-card--inactive" : ""}`}
-          >
-            <div className="staff-card__header">
-              <div
-                className="staff-avatar"
-                style={{
-                  background:
-                    s.role === "doctor" ? "#EDE9FE" : "var(--primary-light)",
-                  color:
-                    s.role === "doctor" ? "#7C3AED" : "var(--primary-dark)",
-                }}
-              >
-                {s.name[0].toUpperCase()}
-              </div>
-              <div className="staff-card__info">
-                <div className="staff-card__name">{s.name}</div>
-                <div className="staff-card__email">{s.email}</div>
+      {/* Role info boxes */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px',marginBottom:'24px'}}>
+        {ROLES.map(r=>{
+          const count = staff.filter(s=>s.role===r.val&&s.isActive).length
+          return (
+            <div key={r.val} className="card" style={{padding:'16px',borderLeft:`3px solid var(--${ROLE_COLOR[r.val]})`}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                <div>
+                  <div style={{fontSize:'13px',fontWeight:700}}>{r.label.split('(')[0].trim()}</div>
+                  <div style={{fontSize:'11px',color:'var(--text-2)',marginTop:'3px'}}>{r.desc}</div>
+                </div>
+                <span style={{fontFamily:'var(--font-num)',fontSize:'22px',fontWeight:800,color:`var(--${ROLE_COLOR[r.val]})`}}>{count}</span>
               </div>
             </div>
-            <div className="staff-card__meta">
-              <span
-                className={`badge badge--${s.role === "doctor" ? "purple" : "primary"}`}
-              >
-                {s.role.charAt(0).toUpperCase() + s.role.slice(1)}
-              </span>
-              <span
-                className={`badge badge--${s.isActive ? "success" : "danger"}`}
-              >
-                {s.isActive ? "Active" : "Inactive"}
-              </span>
+          )
+        })}
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'14px'}}>
+        {staff.map(s=>(
+          <div key={s._id} className="card" style={{padding:'18px',opacity:s.isActive?1:.6}}>
+            <div style={{display:'flex',gap:'12px',marginBottom:'12px'}}>
+              <div style={{width:'42px',height:'42px',borderRadius:'50%',background:`var(--${ROLE_COLOR[s.role]||'teal'}-light,var(--teal-light))`,color:`var(--${ROLE_COLOR[s.role]||'teal'}-dark,var(--teal-dark))`,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'16px',flexShrink:0}}>
+                {s.name[0]}
+              </div>
+              <div>
+                <div style={{fontWeight:700,fontSize:'14px'}}>{s.name}</div>
+                <div style={{fontSize:'11px',color:'var(--text-3)'}}>{s.email}</div>
+              </div>
             </div>
-            {s.phone && <div className="staff-card__phone">{s.phone}</div>}
-            <div className="staff-card__footer">
-              <span className="td-muted" style={{ fontSize: "11px" }}>
-                Added {new Date(s.createdAt).toLocaleDateString("en-IN")}
-              </span>
-              {s.role !== "clinic_owner" && (
-                <button
-                  className={`btn btn--sm btn--${s.isActive ? "danger" : "outline"}`}
-                  onClick={() => handleToggle(s._id)}
-                >
-                  {s.isActive ? "Deactivate" : "Activate"}
+            <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'10px'}}>
+              <span className={`badge badge--${ROLE_COLOR[s.role]||'gray'}`}>{ROLE_LABEL[s.role]||s.role}</span>
+              <span className={`badge badge--${s.isActive?'green':'red'}`}>{s.isActive?'Active':'Inactive'}</span>
+            </div>
+            {s.phone&&<div style={{fontSize:'12px',color:'var(--text-2)',marginBottom:'10px'}}>📞 {s.phone}</div>}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:'10px',borderTop:'1px solid var(--border)'}}>
+              <span style={{fontSize:'11px',color:'var(--text-3)'}}>Added {new Date(s.createdAt).toLocaleDateString('en-IN')}</span>
+              {s.role!=='clinic_owner'&&(
+                <button className={`btn btn--sm btn--${s.isActive?'danger':'secondary'}`} onClick={()=>handleToggle(s._id)}>
+                  {s.isActive?'Deactivate':'Activate'}
                 </button>
               )}
             </div>
           </div>
         ))}
-        {staff.length === 0 && (
-          <div className="clinic-empty">
-            No staff members yet. Add your first team member!
+        {staff.length===0&&(
+          <div className="card" style={{gridColumn:'1/-1',padding:'60px',textAlign:'center',color:'var(--text-3)'}}>
+            No staff members yet. Add your first team member.
           </div>
         )}
       </div>
 
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
-        >
+      {showModal&&(
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setShowModal(false)}>
           <div className="modal">
             <div className="modal__header">
               <h2>Add Staff Member</h2>
-              <button
-                className="modal__close"
-                onClick={() => setShowModal(false)}
-              >
-                ✕
-              </button>
+              <button className="modal__close" onClick={()=>setShowModal(false)}>✕</button>
             </div>
-            {error && (
-              <div className="auth-error" style={{ margin: "0 24px" }}>
-                {error}
+            {error&&<div className="alert alert--error" style={{margin:'0 24px 8px'}}>{error}</div>}
+            <div className="modal__form">
+              <div className="form-group"><label>Role *</label>
+                <select {...f('role')}>
+                  {ROLES.map(r=><option key={r.val} value={r.val}>{r.label}</option>)}
+                </select>
               </div>
-            )}
-            <form onSubmit={handleSubmit} className="modal__form">
+              <div style={{background:'var(--bg)',borderRadius:'8px',padding:'10px 14px',fontSize:'12px',color:'var(--text-2)'}}>
+                {ROLES.find(r=>r.val===form.role)?.desc}
+              </div>
               <div className="form-grid-2">
-                <div className="form-group">
-                  <label>Full Name *</label>
-                  <input {...f("name")} required />
-                </div>
-                <div className="form-group">
-                  <label>Email *</label>
-                  <input type="email" {...f("email")} required />
-                </div>
-                <div className="form-group">
-                  <label>Password *</label>
-                  <input
-                    type="password"
-                    {...f("password")}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Role *</label>
-                  <select {...f("role")}>
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>
-                        {r.charAt(0).toUpperCase() + r.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Phone</label>
-                  <input {...f("phone")} />
-                </div>
+                <div className="form-group"><label>Full Name *</label><input {...f('name')} required /></div>
+                <div className="form-group"><label>Phone</label><input {...f('phone')} /></div>
               </div>
-              <div className="modal__footer">
-                <button
-                  type="button"
-                  className="btn btn--outline"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn--primary"
-                  disabled={loading}
-                >
-                  {loading ? "Adding..." : "Add Staff"}
-                </button>
-              </div>
-            </form>
+              <div className="form-group"><label>Email (Login) *</label><input type="email" {...f('email')} required /></div>
+              <div className="form-group"><label>Password *</label><input type="password" {...f('password')} required minLength={6} placeholder="Min 6 characters" /></div>
+            </div>
+            <div className="modal__footer">
+              <button className="btn btn--secondary" onClick={()=>setShowModal(false)}>Cancel</button>
+              <button className="btn btn--primary" onClick={handleSubmit} disabled={loading}>{loading?'Adding…':'Add Staff'}</button>
+            </div>
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }

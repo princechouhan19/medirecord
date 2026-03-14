@@ -1,158 +1,90 @@
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: var(--sidebar-width);
-  background: var(--sidebar-bg);
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w);
+  height: 100vh; background: var(--surface);
   border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
-  
-  &__logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    
-    &-img {
-      width: 100%;
-      height: 52px;
-      object-fit: contain;
-      object-position: left center;
-    }
+  display: flex; flex-direction: column; z-index: 100; overflow-y: auto;
 
-    .sidebar__role-container {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+  &__brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 16px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    &-mark {
+      width: 34px; height: 34px; background: var(--teal);
+      border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      svg { width: 17px; height: 17px; }
     }
+    &-name { font-size: 16px; font-weight: 800; color: var(--text-1); span { color: var(--teal); } }
   }
-  
+
+  &__clinic {
+    font-size: 11px; color: var(--text-2); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;
+  }
+
+  &__role {
+    margin: 10px 12px; border-radius: 6px; padding: 5px 10px;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    text-align: center; flex-shrink: 0;
+  }
+
   &__nav {
-    flex: 1;
-    padding: 16px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex: 1; padding: 4px 8px; display: flex; flex-direction: column; gap: 1px;
   }
-  
+
   &__link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    transition: all var(--transition);
-    
-    .sidebar-icon svg { width: 18px; height: 18px; }
-    
-    &:hover { background: var(--bg); color: var(--text-primary); }
-    
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: var(--radius-sm);
+    color: var(--text-2); font-size: 13px; font-weight: 500;
+    transition: all var(--ease); position: relative;
+
+    &-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      svg { width: 16px; height: 16px; } }
+
+    &:hover { background: var(--bg); color: var(--text-1); }
+
     &--active {
-      background: var(--primary);
-      color: white;
-      &:hover { background: var(--primary-dark); color: white; }
+      background: var(--teal-light); color: var(--teal-dark); font-weight: 700;
+      .sidebar__link-icon svg { stroke: var(--teal); }
     }
   }
-  
+
+  &__live-dot {
+    margin-left: auto; width: 7px; height: 7px;
+    background: var(--green); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
   &__footer {
-    padding: 16px 12px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    border-top: 1px solid var(--border); padding: 10px 8px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 4px;
   }
-  
+
   &__user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: var(--bg);
-    border-radius: var(--radius-sm);
-    
-    &-avatar {
-      width: 34px;
-      height: 34px;
-      background: var(--primary-light);
-      color: var(--primary-dark);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    
-    &-email { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-    &-role { font-size: 11px; color: var(--text-muted); }
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: var(--radius-sm); background: var(--bg);
   }
-  
+
+  &__avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--teal-light); color: var(--teal-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; flex-shrink: 0;
+  }
+
+  &__user-name  { font-size: 12.5px; font-weight: 700; color: var(--text-1); }
+  &__user-email { font-size: 11px; color: var(--text-3); }
+
   &__logout {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    transition: all var(--transition);
-    width: 100%;
-    
-    .sidebar-icon svg { width: 16px; height: 16px; }
-    &:hover { background: var(--danger-light); color: var(--danger); }
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    font-size: 12.5px; font-weight: 600; color: var(--text-2);
+    transition: all var(--ease); width: 100%;
+    svg { width: 15px; height: 15px; }
+    &:hover { background: var(--red-bg); color: var(--red); }
   }
 }
-
-.sidebar__role-badge {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-top: 2px;
-  
-  &--admin { background: #FEF3C7; color: #D97706; }
-  &--owner { background: #EDE9FE; color: #7C3AED; }
-}
-
-.sidebar__clinic-info {
-  padding: 10px 16px;
-  background: var(--primary-50);
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar__subscription {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.sidebar__expiry {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 6px;
-  background: #f1f5f9;
-  color: var(--text-secondary);
-  border-radius: 4px;
-  
-  &--urgent {
-    background: #fee2e2;
-    color: var(--danger);
-  }
-}
-
-.sidebar__clinic-name { font-size: 12px; font-weight: 600; color: var(--primary-dark); }
-.sidebar__clinic-plan { font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em; }
-.sidebar__user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.sidebar__link-icon { font-size: 15px; width: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

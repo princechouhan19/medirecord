@@ -31,6 +31,18 @@ To empower healthcare providers with a lightweight, fast, and feature-rich EMR t
 
 ---
 
+## 🔐 4-Tier Role Hierarchy
+
+| Role | Login Path | Can Do |
+|------|-----------|--------|
+| `superadmin` | `/admin` | Register clinics, assign Clinic IDs, manage subscriptions |
+| `clinic_owner` | `/clinic` | Manage staff, set test fees, view all data + audit log |
+| `receptionist` | `/reception` | Register patients, collect fees, fill F-Forms |
+| `lab_handler` | `/lab` | Pick patients from queue, run tests, mark complete |
+| `doctor` | `/reception` | View patients, referred cases |
+
+---
+
 ## 📁 Folder Structure
 
 ```text
@@ -96,27 +108,84 @@ We are moving away from fixed plans to a flexible **Time-Based Subscription** mo
 
 ---
 
-## 🚢 Quick Start
+## 🚢 Quick Start & Setup
 
 ### 1. Prerequisites
 - Node.js (v18+)
 - MongoDB (Local or Atlas)
 - ImageKit Account
 
-### 2. Backend Setup
+### 2. Installation
 ```bash
+# Setup Backend
 cd backend
 npm install
 # Create .env from .env.example
 npm run dev
-```
 
-### 3. Frontend Setup
-```bash
-cd frontend
+# Setup Frontend
+cd ../frontend
 npm install
 npm run dev
 ```
+
+### 3. First-Time configuration
+#### A. Create Superadmin (one-time only)
+```bash
+POST /api/auth/setup-superadmin
+{
+  "name": "Prince Chouhan",
+  "email": "admin@medirecord.in",
+  "password": "your-secure-password"
+}
+```
+
+#### B. Setup Clinic
+1. Login as Superadmin → Go to `/admin/clinics` → Register a Clinic.
+2. Fill clinic details + PNDT Reg No.
+3. Assign a Clinic ID (e.g. `MEDI-001`).
+4. Enter owner name, email, password (this creates the Clinic Owner account).
+
+#### C. Clinic Configuration
+1. Clinic Owner Logs In → `/clinic/tests` → Add Test Categories.
+2. Add "Sonography" → Sub-tests: ANC (₹500), USG Obs (₹600)... or click "⚡ Load Defaults".
+3. Clinic Owner → `/clinic/staff` → Add Staff (Receptionist, Lab Handler, Doctors).
+
+---
+
+## 📋 Application Sitemap
+
+| URL | Role | Description |
+|-----|------|-------------|
+| `/admin` | superadmin | Platform stats, clinic list |
+| `/admin/clinics` | superadmin | Register + manage clinics |
+| `/clinic` | clinic_owner | Dashboard with live stats |
+| `/clinic/queue` | clinic_owner | Live patient queue |
+| `/clinic/staff` | clinic_owner | Add/manage staff |
+| `/clinic/tests` | clinic_owner | Test categories + fee config |
+| `/clinic/pndt` | clinic_owner | 12-column PNDT register |
+| `/clinic/activity` | clinic_owner | Staff audit log |
+| `/reception` | receptionist | Daily dashboard |
+| `/reception/register` | receptionist | Register patient + billing |
+| `/reception/queue` | receptionist | Today's queue view |
+| `/reception/fform` | receptionist | Fill F-Form |
+| `/lab` | lab_handler | Pending patient queue |
+| `/lab/queue` | lab_handler | Full queue + status actions |
+
+---
+
+## 🧾 Patient Workflow
+
+1. **Registration**: Receptionist registers patient → Auto token # assigned → Test fee auto-filled → Receipt printable → Patient appears in "Waiting" queue.
+2. **Procedure**: Lab Handler picks up patient → Click "Start" (In Progress) → Runs test → Click "Complete" (Completed) → Activity logged.
+3. **Documentation**: Receptionist fills F-Form → Select patient → Fill findings → Save → View → Print/Download.
+
+---
+
+## 📝 PNDT Register Compliance (Form F)
+Matches the physical 12-column format required by the government:
+- Sr. No., Registration No., Date, Patient Name+Age, Address, Referred By, Living Children, LMP/Weeks, Indication, Declaration Date, Result/Findings.
+- Filter by month/year, then click **Print** for a court-ready register.
 
 ---
 

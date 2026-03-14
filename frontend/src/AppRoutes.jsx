@@ -1,89 +1,99 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './features/auth/hooks/useAuth'
-
-import LoginPage from './features/auth/pages/LoginPage'
 import MainLayout from './components/Layout/MainLayout'
-import ProfilePage from './features/profile/pages/ProfilePage'
 
-// Staff/Doctor pages
-import DashboardPage from './features/dashboard/pages/DashboardPage'
-import RegistrationPage from './features/registration/pages/RegistrationPage'
-import ReportingPage from './features/reporting/pages/ReportingPage'
-import TrackingPage from './features/tracking/pages/TrackingPage'
-import FFormPage from './features/fform/pages/FFormPage'
+// Auth
+import LoginPage from './features/auth/pages/LoginPage'
 
-// Clinic Owner pages
-import ClinicDashboardPage from './features/clinic/pages/ClinicDashboardPage'
-import ClinicStaffPage from './features/clinic/pages/ClinicStaffPage'
-import ClinicSettingsPage from './features/clinic/pages/ClinicSettingsPage'
+// Super Admin
+import AdminDashboardPage   from './features/admin/pages/AdminDashboardPage'
+import AdminClinicsPage     from './features/admin/pages/AdminClinicsPage'
+import AdminUsersPage       from './features/admin/pages/AdminUsersPage'
 
-// SuperAdmin pages
-import AdminDashboardPage from './features/admin/pages/AdminDashboardPage'
-import AdminClinicsPage from './features/admin/pages/AdminClinicsPage'
-import AdminUsersPage from './features/admin/pages/AdminUsersPage'
+// Clinic Owner
+import ClinicDashboardPage  from './features/clinic/pages/ClinicDashboardPage'
+import ClinicStaffPage      from './features/clinic/pages/ClinicStaffPage'
+import ClinicSettingsPage   from './features/clinic/pages/ClinicSettingsPage'
+import ClinicPatientsPage   from './features/clinic/pages/ClinicPatientsPage'
+import ClinicActivityPage   from './features/clinic/pages/ClinicActivityPage'
+import TestFeesPage         from './features/tests/pages/TestFeesPage'
+import PndtRegisterPage     from './features/pndt/pages/PndtRegisterPage'
 
-const getHomeRoute = (user) => {
-  if (!user) return '/login'
-  if (user.role === 'superadmin' || user.role === 'admin') return '/admin'
-  if (user.role === 'clinic_owner') return '/clinic'
-  return '/dashboard'
+// Receptionist
+import ReceptionDashboard   from './features/reception/pages/ReceptionDashboard'
+import RegisterPatientPage  from './features/reception/pages/RegisterPatientPage'
+import ReceptionFFormPage   from './features/reception/pages/ReceptionFFormPage'
+
+// Lab Handler
+import LabDashboard         from './features/lab/pages/LabDashboard'
+
+// Shared
+import LiveQueuePage        from './features/queue/pages/LiveQueuePage'
+import FFormPage            from './features/fform/pages/FFormPage'
+import ProfilePage          from './features/profile/pages/ProfilePage'
+
+const HOME = {
+  superadmin:   '/admin',
+  clinic_owner: '/clinic',
+  receptionist: '/reception',
+  lab_handler:  '/lab',
+  doctor:       '/reception',
 }
 
-function ProtectedRoute({ children }) {
-  const { token } = useAuth()
-  return token ? children : <Navigate to="/login" replace />
-}
-
-function RoleRoute({ children, roles }) {
-  const { user } = useAuth()
-  if (!roles.includes(user?.role)) {
-    return <Navigate to={getHomeRoute(user)} replace />
-  }
+function Guarded({ children, roles }) {
+  const { token, user } = useAuth()
+  if (!token) return <Navigate to="/login" replace />
+  if (roles && !roles.includes(user?.role)) return <Navigate to={HOME[user?.role] || '/login'} replace />
   return children
 }
 
 export default function AppRoutes() {
   const { token, user } = useAuth()
-
-  // Redirect to correct home by role
-  const homeRedirect = () => getHomeRoute(user)
+  const home = HOME[user?.role] || '/login'
 
   return (
     <Routes>
-      <Route path="/login" element={token ? <Navigate to={homeRedirect()} replace /> : <LoginPage />} />
+      <Route path="/login" element={token ? <Navigate to={home} replace /> : <LoginPage />} />
 
-      {/* SuperAdmin routes */}
-      <Route path="/admin" element={<ProtectedRoute><RoleRoute roles={['superadmin', 'admin']}><MainLayout role="superadmin" /></RoleRoute></ProtectedRoute>}>
+      {/* ── Super Admin ─────────────────────────────────────────── */}
+      <Route path="/admin" element={<Guarded roles={['superadmin']}><MainLayout role="superadmin" /></Guarded>}>
         <Route index element={<AdminDashboardPage />} />
         <Route path="clinics" element={<AdminClinicsPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="users"   element={<AdminUsersPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Clinic Owner routes */}
-      <Route path="/clinic" element={<ProtectedRoute><RoleRoute roles={['clinic_owner']}><MainLayout role="clinic_owner" /></RoleRoute></ProtectedRoute>}>
-        <Route index element={<ClinicDashboardPage />} />
-        <Route path="patients" element={<RegistrationPage />} />
-        <Route path="staff" element={<ClinicStaffPage />} />
-        <Route path="reports" element={<ReportingPage />} />
-        <Route path="tracking" element={<TrackingPage />} />
-        <Route path="fforms" element={<FFormPage />} />
+      {/* ── Clinic Owner ─────────────────────────────────────────── */}
+      <Route path="/clinic" element={<Guarded roles={['clinic_owner']}><MainLayout role="clinic_owner" /></Guarded>}>
+        <Route index    element={<ClinicDashboardPage />} />
+        <Route path="queue"    element={<LiveQueuePage />} />
+        <Route path="patients" element={<ClinicPatientsPage />} />
+        <Route path="staff"    element={<ClinicStaffPage />} />
+        <Route path="fforms"   element={<FFormPage />} />
+        <Route path="pndt"     element={<PndtRegisterPage />} />
+        <Route path="activity" element={<ClinicActivityPage />} />
+        <Route path="tests"    element={<TestFeesPage />} />
         <Route path="settings" element={<ClinicSettingsPage />} />
+        <Route path="profile"  element={<ProfilePage />} />
+      </Route>
+
+      {/* ── Receptionist ─────────────────────────────────────────── */}
+      <Route path="/reception" element={<Guarded roles={['receptionist','doctor']}><MainLayout role="receptionist" /></Guarded>}>
+        <Route index    element={<ReceptionDashboard />} />
+        <Route path="queue"    element={<LiveQueuePage />} />
+        <Route path="register" element={<RegisterPatientPage />} />
+        <Route path="fform"    element={<FFormPage />} />
+        <Route path="profile"  element={<ProfilePage />} />
+      </Route>
+
+      {/* ── Lab Handler ──────────────────────────────────────────── */}
+      <Route path="/lab" element={<Guarded roles={['lab_handler']}><MainLayout role="lab_handler" /></Guarded>}>
+        <Route index    element={<LabDashboard />} />
+        <Route path="queue"  element={<LiveQueuePage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
-      {/* Staff routes */}
-      <Route path="/" element={<ProtectedRoute><RoleRoute roles={['staff','doctor']}><MainLayout role="staff" /></RoleRoute></ProtectedRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="registration" element={<RegistrationPage />} />
-        <Route path="reporting" element={<ReportingPage />} />
-        <Route path="tracking" element={<TrackingPage />} />
-        <Route path="fform" element={<FFormPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-      </Route>
-
-      <Route path="*" element={<Navigate to={token ? homeRedirect() : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={token ? home : '/login'} replace />} />
     </Routes>
   )
 }

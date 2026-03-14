@@ -42,12 +42,11 @@ export default function FFormView({ form, onClose }) {
   }
 
   const handleDownload = () => {
-    const blob = new Blob([buildHtml(pdfBody())], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `FForm-${form.formNumber}-${(form.patient?.name || 'Patient').replace(/\s+/g, '_')}.html`
-    a.click(); URL.revokeObjectURL(url)
+    // Open print window → browser Save as PDF
+    const w = window.open('', '_blank', 'width=900,height=700')
+    w.document.write(buildHtml(pdfBody()))
+    w.document.close(); w.focus()
+    setTimeout(() => { w.print() }, 600)
   }
 
   const handleShare = async () => {
@@ -86,7 +85,10 @@ export default function FFormView({ form, onClose }) {
             {/* Header */}
             <div className="pdf-header">
               <div>
-                <div className="pdf-logo">Medi<span>Record</span></div>
+                {(form.clinic?.logoUrl || form.clinic?.logo) && (
+                  <img src={form.clinic.logoUrl || form.clinic.logo} alt="" style={{height:34,objectFit:'contain',display:'block',marginBottom:4}} />
+                )}
+                <div className="pdf-logo">{form.clinic?.name || user?.clinic?.name || 'MediRecord'}</div>
                 <div className="pdf-sub">Clinical Findings Form (F-Form)</div>
               </div>
               <div style={{ textAlign: 'right' }}>

@@ -197,3 +197,15 @@ img { max-width:100%; }
 // mobile: < 600px
 // tablet: 600-1024px
 // desktop: > 1024px
+
+// ── Dashboard Stats Grid ──────────────────────────────────────────────
+.dash-stats-grid {
+  @media(max-width: 900px)  { grid-template-columns: repeat(4,1fr) !important; }
+  @media(max-width: 640px)  { grid-template-columns: repeat(2,1fr) !important; }
+}
+
+// ── Two-column layout → stacks on tablet ─────────────────────────────
+.dash-main-cols {
+  display: grid; grid-template-columns: 1fr 320px; gap: 18px;
+  @media(max-width: 900px) { grid-template-columns: 1fr; }
+}

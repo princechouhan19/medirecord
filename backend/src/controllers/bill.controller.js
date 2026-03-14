@@ -25,7 +25,7 @@ exports.getOne = async (req, res, next) => {
   try {
     const bill = await Bill.findById(req.params.id)
       .populate('patient','name age gender phone address husbandName')
-      .populate('clinic','name address phone logo pndtRegNo')
+      .populate('clinic','name address phone logo logoUrl gstSettings pndtRegNo')
       .populate('createdBy','name');
     if (!bill) return res.status(404).json({ error: 'Bill not found' });
     res.json({ bill });

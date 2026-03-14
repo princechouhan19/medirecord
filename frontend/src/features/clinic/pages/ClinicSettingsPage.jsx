@@ -66,6 +66,7 @@ export default function ClinicSettingsPage() {
   const [passErr, setPassErr]   = useState('')
   const [passLoading, setPassLoading] = useState(false)
   const [discountRoles, setDiscountRoles] = useState([])
+  const [gst, setGst] = useState({ enabled:false, gstin:'', gstType:'CGST_SGST', cgstPercent:9, sgstPercent:9, igstPercent:18 })
   const ref = useRef(null)
 
   useEffect(() => {
@@ -80,6 +81,14 @@ export default function ClinicSettingsPage() {
         specialization: c.specialization,
       })
       setDiscountRoles(c.settings?.discountRoles || [])
+      if (c.gstSettings) setGst({
+        enabled: c.gstSettings.enabled||false,
+        gstin: c.gstSettings.gstin||'',
+        gstType: c.gstSettings.gstType||'CGST_SGST',
+        cgstPercent: c.gstSettings.cgstPercent||9,
+        sgstPercent: c.gstSettings.sgstPercent||9,
+        igstPercent: c.gstSettings.igstPercent||18,
+      })
     }).catch(()=>{})
   }, [])
 
@@ -114,6 +123,8 @@ export default function ClinicSettingsPage() {
       : [...discountRoles, role]
     setDiscountRoles(updated)
     await api.patch('/clinics/my/logo', { discountRoles: updated })
+    // reload clinic
+    api.get('/clinics/my/clinic').then(r => setClinic(r.data.clinic))
   }
 
   const handleChangePassword = async e => {
@@ -127,6 +138,17 @@ export default function ClinicSettingsPage() {
       setTimeout(() => setPassMsg(''), 3000)
     } catch(e) { setPassErr(e.response?.data?.error || 'Failed') }
     finally { setPassLoading(false) }
+  }
+
+  const saveGst = async () => {
+    try {
+      await api.patch('/clinics/my/logo', {
+        gstEnabled: gst.enabled, gstin: gst.gstin, gstType: gst.gstType,
+        cgstPercent: Number(gst.cgstPercent), sgstPercent: Number(gst.sgstPercent), igstPercent: Number(gst.igstPercent),
+      })
+      setCMsg('GST settings saved!')
+      setTimeout(() => setCMsg(''), 3000)
+    } catch(e) { setCMsg('Failed to save GST settings') }
   }
 
   const cf = k => ({ value: cForm[k]||'', onChange: e => setCForm({...cForm,[k]:e.target.value}) })
@@ -269,6 +291,45 @@ export default function ClinicSettingsPage() {
             <div style={{fontSize:12,fontWeight:600}}>{user?.lastLogin?new Date(user.lastLogin).toLocaleString('en-IN'):'—'}</div>
           </div>
         </div>
+      </div>
+
+      {/* GST Settings */}
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:16,paddingBottom:12,borderBottom:'1px solid var(--border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span>GST Settings</span>
+          <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:500,fontSize:13,textTransform:'none'}}>
+            <input type="checkbox" checked={gst.enabled} onChange={e=>setGst({...gst,enabled:e.target.checked})} style={{width:16,height:16,accentColor:'var(--teal)'}}/>
+            Enable GST on Bills
+          </label>
+        </div>
+        {gst.enabled && (
+          <div style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div style={{background:'var(--amber-bg)',border:'1px solid #FDE68A',borderRadius:8,padding:'10px 14px',fontSize:12,color:'#92400E'}}>
+              ⚠️ Note: Most diagnostic services (SAC 9993) are GST-exempt in India. Enable only if your clinic is GST-registered and applicable.
+            </div>
+            <div className="form-grid-2">
+              <div className="form-group"><label>GSTIN *</label><input value={gst.gstin} onChange={e=>setGst({...gst,gstin:e.target.value})} placeholder="22AAAAA0000A1Z5" /></div>
+              <div className="form-group"><label>GST Type</label>
+                <select value={gst.gstType} onChange={e=>setGst({...gst,gstType:e.target.value})}>
+                  <option value="CGST_SGST">CGST + SGST (Intra-state)</option>
+                  <option value="IGST">IGST (Inter-state)</option>
+                </select>
+              </div>
+              {gst.gstType==='CGST_SGST' ? (
+                <>
+                  <div className="form-group"><label>CGST %</label><input type="number" value={gst.cgstPercent} onChange={e=>setGst({...gst,cgstPercent:e.target.value})} min={0} max={50} /></div>
+                  <div className="form-group"><label>SGST %</label><input type="number" value={gst.sgstPercent} onChange={e=>setGst({...gst,sgstPercent:e.target.value})} min={0} max={50} /></div>
+                </>
+              ) : (
+                <div className="form-group"><label>IGST %</label><input type="number" value={gst.igstPercent} onChange={e=>setGst({...gst,igstPercent:e.target.value})} min={0} max={100} /></div>
+              )}
+            </div>
+            <div style={{display:'flex',justifyContent:'flex-end'}}>
+              <button className="btn btn--primary" onClick={saveGst}>Save GST Settings</button>
+            </div>
+          </div>
+        )}
+        {!gst.enabled && <div style={{fontSize:13,color:'var(--text-3)',textAlign:'center',padding:'12px 0'}}>GST disabled — all bills will be generated without tax lines.</div>}
       </div>
 
       {/* Change password */}

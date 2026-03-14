@@ -19,7 +19,7 @@ exports.getOne = async (req, res, next) => {
     const form = await FForm.findById(req.params.id)
       .populate('patient', 'name age gender phone aadhaar address')
       .populate('createdBy', 'name')
-      .populate('clinic', 'name address phone');
+      .populate('clinic', 'name address phone logoUrl logo pndtRegNo');
     if (!form) return res.status(404).json({ error: 'Form not found' });
     res.json({ form });
   } catch (err) { next(err); }

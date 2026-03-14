@@ -250,15 +250,123 @@ exports.removeTestCategory = async (req, res, next) => {
 // ── Logo + Discount Settings ─────────────────────────────────────────
 exports.updateLogoAndSettings = async (req, res, next) => {
   try {
-    const { logoUrl, logoFileId, ownerProfileImage, ownerProfileFileId, discountRoles } = req.body;
+    const {
+      logoUrl, logoFileId, ownerProfileImage, ownerProfileFileId, discountRoles,
+      gstEnabled, gstin, gstType, cgstPercent, sgstPercent, igstPercent,
+    } = req.body;
     const clinic = await require('../models/Clinic.model').findById(req.user.clinic);
     if (!clinic) return res.status(404).json({ error: 'Clinic not found' });
-    if (logoUrl !== undefined) clinic.logoUrl = logoUrl;
-    if (logoFileId !== undefined) clinic.logoFileId = logoFileId;
-    if (ownerProfileImage !== undefined) clinic.ownerProfileImage = ownerProfileImage;
+    if (logoUrl !== undefined)            clinic.logoUrl = logoUrl;
+    if (logoFileId !== undefined)         clinic.logoFileId = logoFileId;
+    if (ownerProfileImage !== undefined)  clinic.ownerProfileImage = ownerProfileImage;
     if (ownerProfileFileId !== undefined) clinic.ownerProfileFileId = ownerProfileFileId;
-    if (discountRoles !== undefined) clinic.settings.discountRoles = discountRoles;
+    if (discountRoles !== undefined)      clinic.settings.discountRoles = discountRoles;
+    // GST settings
+    if (!clinic.gstSettings) clinic.gstSettings = {};
+    if (gstEnabled !== undefined)    clinic.gstSettings.enabled     = gstEnabled;
+    if (gstin !== undefined)         clinic.gstSettings.gstin        = gstin;
+    if (gstType !== undefined)       clinic.gstSettings.gstType      = gstType;
+    if (cgstPercent !== undefined)   clinic.gstSettings.cgstPercent  = cgstPercent;
+    if (sgstPercent !== undefined)   clinic.gstSettings.sgstPercent  = sgstPercent;
+    if (igstPercent !== undefined)   clinic.gstSettings.igstPercent  = igstPercent;
     await clinic.save();
     res.json({ clinic });
+  } catch(err){ next(err); }
+};
+
+// ── Branch Management ─────────────────────────────────────────────────
+exports.addBranch = async (req, res, next) => {
+  try {
+    const Clinic = require('../models/Clinic.model');
+    const User   = require('../models/User.model');
+    const parentId = req.user.clinic?._id || req.user.clinic;
+    const parent   = await Clinic.findById(parentId);
+    if (!parent) return res.status(404).json({ error: 'Parent clinic not found' });
+
+    const { name, branchName, address, city, state, phone, email,
+            ownerName, ownerEmail, ownerPassword, ownerPhone } = req.body;
+
+    // Create branch owner account
+    const existing = await User.findOne({ email: ownerEmail });
+    if (existing) return res.status(400).json({ error: 'Owner email already in use' });
+
+    const branchOwner = await User.create({
+      name: ownerName, email: ownerEmail, password: ownerPassword,
+      phone: ownerPhone||'', role: 'clinic_owner',
+    });
+
+    // Create branch clinic (inherits test categories + subscription from parent)
+    const branch = await Clinic.create({
+      name: name || parent.name,
+      branchName: branchName || '',
+      owner: branchOwner._id,
+      parentClinic: parentId,
+      isBranch: true,
+      address, city, state, phone, email,
+      testCategories: parent.testCategories,           // inherit parent's test fees
+      subscription: { ...parent.subscription.toObject() }, // inherit subscription
+      isActive: true,
+    });
+
+    branchOwner.clinic = branch._id;
+    await branchOwner.save();
+
+    res.status(201).json({ branch });
+  } catch(err){ next(err); }
+};
+
+exports.getBranches = async (req, res, next) => {
+  try {
+    const Clinic  = require('../models/Clinic.model');
+    const Patient = require('../models/Patient.model');
+    const Bill    = require('../models/Bill.model');
+    const parentId = req.user.clinic?._id || req.user.clinic;
+
+    const branches = await Clinic.find({ parentClinic: parentId })
+      .populate('owner', 'name email');
+
+    // Attach stats per branch
+    const withStats = await Promise.all(branches.map(async b => {
+      const [patients, revenue] = await Promise.all([
+        Patient.countDocuments({ clinic: b._id }),
+        Bill.aggregate([
+          { $match: { clinic: b._id, isPaid: true } },
+          { $group: { _id: null, total: { $sum: '$total' } } }
+        ]),
+      ]);
+      return {
+        ...b.toObject(),
+        _patientCount: patients,
+        _revenue: revenue[0]?.total || 0,
+      };
+    }));
+
+    // Also get parent's own stats
+    const [parentPatients, parentRevenue] = await Promise.all([
+      Patient.countDocuments({ clinic: parentId }),
+      Bill.aggregate([
+        { $match: { clinic: parentId, isPaid: true } },
+        { $group: { _id: null, total: { $sum: '$total' } } }
+      ]),
+    ]);
+
+    res.json({
+      branches: withStats,
+      parentStats: {
+        patients: parentPatients,
+        revenue:  parentRevenue[0]?.total || 0,
+      },
+      totalRevenue: withStats.reduce((s,b) => s + b._revenue, 0) + (parentRevenue[0]?.total || 0),
+      totalPatients: withStats.reduce((s,b) => s + b._patientCount, 0) + parentPatients,
+    });
+  } catch(err){ next(err); }
+};
+
+// Superadmin: view all branches of a clinic
+exports.getClinicBranches = async (req, res, next) => {
+  try {
+    const Clinic = require('../models/Clinic.model');
+    const branches = await Clinic.find({ parentClinic: req.params.id }).populate('owner','name email');
+    res.json({ branches });
   } catch(err){ next(err); }
 };

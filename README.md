@@ -328,16 +328,7 @@ cd backend && npm run dev       # http://localhost:5000
 cd frontend && npm run dev      # http://localhost:5173 (proxied to :5000)
 ```
 
-### 4. Create First Superadmin (one time)
-```bash
-curl -X POST http://localhost:5000/api/auth/setup-superadmin \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Prince Chouhan","email":"admin@medirecord.in","password":"yourpassword"}'
-```
-
-Or use Postman / Thunder Client.
-
-### 5. First-Time Clinic Setup Flow
+### 4. First-Time Clinic Setup Flow
 1. Login as superadmin → `/admin/clinics` → **Register Clinic**
    - Fill clinic details, assign Clinic ID (e.g. `LIFE-001`), choose plan + duration
    - Enter owner email + password — owner account created automatically
@@ -412,6 +403,25 @@ RENDER_EXTERNAL_URL=https://your-app.onrender.com
 - `ClinicSettingsPage`: clinic logo upload, owner profile photo, discount role permissions
 - `ClinicStaffPage`: click card → modal with 7-day activity bar chart + recent logs
 - Responsive: mobile nav, topbar, sidebar overlay, collapsing form grids
+
+### v5 — Clinic Dashboard Upgrade & Bug Fixes
+**Here's everything done in this continuation pass:**
+
+#### Bugs fixed:
+- **Route Cleanup**: Duplicate `/branches` route removed from reception section.
+- **JSX Fix**: Broken `{/* Lab Handler */}` JSX comment (was missing `}`) — fixed build error.
+- **PDF Export**: `FFormView` download now uses print-to-PDF instead of saving as raw `.html`.
+- **Branding**: `FFormView` preview now shows dynamic clinic logo + name instead of hardcoded "MediRecord".
+- **Data Populating**: Bill controller `getOne` now correctly populates `logoUrl` and `gstSettings`.
+- **Data Populating**: `FForm` controller `getOne` now correctly populates `logoUrl`.
+
+#### Clinic Dashboard — Full Upgrade:
+- **Enhanced Stats**: 8 stat cards including today's bill count, today's revenue, and total revenue (upgraded from 5 cards).
+- **Subscription Tracking**: Subscription badge with days-left count added directly to the dashboard header.
+- **Branch Overview**: Branch mini-overview appears automatically for clinics with branches, showing per-branch patients + revenue.
+- **Staff Visuals**: Staff cards now show profile photos if set.
+- **Quick-Links Grid**: Added a practical quick-links grid at the bottom of the staff panel (Test Fees, PNDT, Bills, Audit).
+- **Responsive Layout**: Stats grid updated to be 4-column on desktop and 2-column on mobile.
 
 ---
 

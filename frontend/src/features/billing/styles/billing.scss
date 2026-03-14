@@ -12,3 +12,5 @@
   &__row { display:flex; justify-content:space-between; font-size:14px; padding:4px 0; &--discount{color:var(--amber)} }
   &__total { font-size:17px; font-weight:800; color:var(--teal); border-top:2px solid var(--teal); padding-top:10px; margin-top:4px; }
 }
+
+.bill-summary__row--tax { color: var(--blue); font-size: 12px; }

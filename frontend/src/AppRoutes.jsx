@@ -15,6 +15,7 @@ import ClinicActivityPage from './features/clinic/pages/ClinicActivityPage'
 import TestFeesPage       from './features/tests/pages/TestFeesPage'
 import PndtRegisterPage   from './features/pndt/pages/PndtRegisterPage'
 import BillingPage        from './features/billing/pages/BillingPage'
+import BranchesPage       from './features/branches/pages/BranchesPage'
 import ReceptionDashboard from './features/reception/pages/ReceptionDashboard'
 import RegisterPatientPage from './features/reception/pages/RegisterPatientPage'
 import LabDashboard       from './features/lab/pages/LabDashboard'
@@ -59,6 +60,7 @@ export default function AppRoutes() {
         <Route path="activity" element={<ClinicActivityPage/>}/>
         <Route path="tests"    element={<TestFeesPage/>}/>
         <Route path="bills"    element={<BillingPage/>}/>
+        <Route path="branches" element={<BranchesPage/>}/>
         <Route path="settings" element={<ClinicSettingsPage/>}/>
         <Route path="profile"  element={<ProfilePage/>}/>
       </Route>

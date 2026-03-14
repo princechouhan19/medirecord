@@ -42,4 +42,8 @@ fformSchema.pre('save', async function(next) {
   next();
 });
 
+// PERFORMANCE INDEXES
+fformSchema.index({ clinic: 1, createdAt: -1 });
+fformSchema.index({ patient: 1, createdAt: -1 });
+
 module.exports = mongoose.model('FForm', fformSchema);

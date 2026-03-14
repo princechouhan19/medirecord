@@ -17,11 +17,16 @@ router.get('/my/tests',           requireRole('clinic_owner','receptionist','lab
 router.post('/my/tests',          requireRole('clinic_owner'), c.upsertTestCategory)
 router.delete('/my/tests/:catId', requireRole('clinic_owner'), c.removeTestCategory)
 
+// ── Branch management ───────────────────────────────────────────────────
+router.get('/my/branches',  requireRole('clinic_owner'), c.getBranches)
+router.post('/my/branches', requireRole('clinic_owner'), c.addBranch)
+
 // ── Superadmin — platform-wide ───────────────────────────────────────
 router.get('/stats',          requireRole('superadmin'), c.getStats)
 router.get('/',               requireRole('superadmin'), c.getAll)
 router.post('/',              requireRole('superadmin'), c.create)
 router.get('/:id',            requireRole('superadmin'), c.getOne)
+router.get('/:id/branches',   requireRole('superadmin'), c.getClinicBranches)
 router.patch('/:id',          requireRole('superadmin'), c.update)
 router.patch('/:id/toggle',   requireRole('superadmin'), c.toggleActive)
 

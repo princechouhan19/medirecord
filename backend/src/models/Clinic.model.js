@@ -18,6 +18,9 @@ const testCategorySchema = new mongoose.Schema({
 const clinicSchema = new mongoose.Schema({
   name:            { type: String, required: true, trim: true },
   clinicId:        { type: String, unique: true, sparse: true }, // superadmin-assigned ID e.g. MEDI-001
+  parentClinic:    { type: mongoose.Schema.Types.ObjectId, ref: 'Clinic', default: null }, // null = main clinic
+  isBranch:        { type: Boolean, default: false },
+  branchName:      { type: String, default: '' }, // e.g. "North Branch", "Satellite Centre"
   owner:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   address:         { type: String, default: '' },
   city:            { type: String, default: '' },
@@ -42,10 +45,18 @@ const clinicSchema = new mongoose.Schema({
   logoFileId:   { type: String, default: '' },
   ownerProfileImage:   { type: String, default: '' },
   ownerProfileFileId:  { type: String, default: '' },
+  gstSettings: {
+    enabled:     { type: Boolean, default: false },
+    gstin:       { type: String, default: '' },    // GST registration number
+    gstType:     { type: String, enum: ['CGST_SGST','IGST','none'], default: 'none' },
+    cgstPercent: { type: Number, default: 0 },
+    sgstPercent: { type: Number, default: 0 },
+    igstPercent: { type: Number, default: 0 },
+  },
   settings: {
     maxPatients:    { type: Number, default: 1000 },
     maxStaff:       { type: Number, default: 10 },
-    discountRoles:  { type: [String], default: [] }, // roles allowed to give discount
+    discountRoles:  { type: [String], default: [] },
   },
 }, { timestamps: true });
 

@@ -15,12 +15,12 @@ export default function BranchesPage() {
   const ref = useRef(null)
 
   useEffect(() => {
-    if (ref.current) gsap.fromTo(ref.current, {y:-16,opacity:0}, {y:0,opacity:1,duration:.5})
+    gsap.fromTo(ref.current, {y:-16,opacity:0}, {y:0,opacity:1,duration:.5})
     fetchBranches()
   }, [])
 
   const fetchBranches = async () => {
-    try { const r = await api.get('/clinics/my/branches'); setData(r.data) } catch(e) { setError(e.response?.data?.error || 'Failed to load branches') }
+    try { const r = await api.get('/clinics/my/branches'); setData(r.data) } catch(e) {}
   }
 
   const handleSubmit = async e => {
@@ -32,7 +32,7 @@ export default function BranchesPage() {
 
   const f = k => ({ value: form[k], onChange: e => setForm({...form,[k]:e.target.value}) })
 
-  const { branches, parentStats, totalRevenue, totalPatients } = data
+  const { branches = [], parentStats = {}, totalRevenue = 0, totalPatients = 0 } = data || {}
   const mainName = user?.clinic?.name || 'Main Clinic'
 
   return (
@@ -48,9 +48,9 @@ export default function BranchesPage() {
       {/* Consolidated totals */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14,marginBottom:24}}>
         {[
-          { label:'Total Patients (All)', val:totalPatients, c:'var(--teal)' },
+          { label:'Total Patients (All)', val:totalPatients || 0, c:'var(--teal)' },
           { label:'Total Revenue (All)',  val:`₹${(totalRevenue||0).toLocaleString('en-IN')}`, c:'var(--green)' },
-          { label:'Branches',             val:branches.length, c:'var(--purple)' },
+          { label:'Branches',             val:branches?.length || 0, c:'var(--purple)' },
         ].map(s => (
           <div key={s.label} className="card" style={{padding:18,borderTop:`3px solid ${s.c}`,textAlign:'center'}}>
             <div style={{fontFamily:'var(--font-num)',fontSize:26,fontWeight:800,color:s.c}}>{s.val}</div>

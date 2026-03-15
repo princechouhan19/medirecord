@@ -1,4 +1,3 @@
-import { printPatientRecordById } from '../components/PatientRecordSheet'
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { gsap } from 'gsap'
@@ -78,9 +77,6 @@ export default function ReceptionDashboard() {
                   </span>
                 </td>
                 <td className="td-muted">{new Date(p.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
-                <td>
-                  <button className="btn btn--ghost btn--sm" title="Print A4 Record" onClick={() => printPatientRecordById(p._id)}>🖨</button>
-                </td>
               </tr>
             ))}
             {recent.length === 0 && (

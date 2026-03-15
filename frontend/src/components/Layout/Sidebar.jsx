@@ -12,7 +12,6 @@ const NAV = {
   clinic_owner: [
     { path:'/clinic',          label:'Overview',     icon:'grid',     end:true },
     { path:'/clinic/queue',    label:'Live Queue',   icon:'queue',    live:true },
-    { path:'/clinic/register', label:'Register Patient',icon:'patient' },
     { path:'/clinic/patients', label:'Patients',     icon:'patient' },
     { path:'/clinic/staff',    label:'Staff',        icon:'users' },
     { path:'/clinic/fforms',   label:'F-Forms',      icon:'fform' },

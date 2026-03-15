@@ -1,4 +1,3 @@
-import { printPatientRecordById } from '../../reception/components/PatientRecordSheet'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -27,21 +26,8 @@ function QCard({ p, onStatus, canStart, canComplete }) {
         <span className="qcard__cat">{p.testCategory}</span>
         <span className="qcard__tname">→ {p.testName}</span>
       </div>
-      {(p.referredDoctor?.name || p.referredBy) && (
-        <div className="qcard__ref">👨‍⚕️ Ref: {p.referredDoctor?.name || p.referredBy}</div>
-      )}
-      {p.relativeName && (
-        <div className="qcard__ref">{p.relationType||'H/O'}: {p.relativeName}</div>
-      )}
-      {!p.relativeName && p.husbandName && (
-        <div className="qcard__ref">H/O: {p.husbandName}</div>
-      )}
-      {p.fformRequired && (
-        <div className="qcard__fform">📋 F-Form Required</div>
-      )}
-      {p.weeksOfPregnancy > 0 && (
-        <div className="qcard__ref">🤱 {p.weeksOfPregnancy}w {p.daysOfPregnancy||0}d pregnant</div>
-      )}
+      {p.referredBy && <div className="qcard__ref">📋 Ref: {p.referredBy}</div>}
+      {p.husbandName && <div className="qcard__ref">H/O: {p.husbandName}</div>}
       <div className="qcard__fee">
         <strong>₹{p.fee}</strong>
         <span className={`badge badge--${p.isPaid ? 'green' : 'amber'}`}>{PAY[p.paymentMode]} {p.isPaid ? 'Paid' : 'Pending'}</span>
@@ -60,8 +46,6 @@ function QCard({ p, onStatus, canStart, canComplete }) {
         {p.completedAt && (
           <span className="qcard__time">{new Date(p.completedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</span>
         )}
-        <button className="btn btn--ghost btn--sm" title="Print A4 Record" style={{marginLeft:'auto'}}
-          onClick={() => printPatientRecordById(p._id)}>🖨</button>
       </div>
     </div>
   )

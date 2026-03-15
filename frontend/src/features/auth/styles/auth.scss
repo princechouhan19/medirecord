@@ -1,12 +1,13 @@
 // ── Login Page ─────────────────────────────────────────────────────────
-// Inspired by the uploaded reference design: white form left, teal illustration right
+// Centered card layout with illustration touching bottom
 
 .lp {
   min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  background: #F0F4F8;  // solid, no gradient
+  background: #F0F4F8;
   padding: 20px;
   position: relative;
+  overflow: hidden;
 
   // Subtle dot grid
   &__bg {
@@ -45,7 +46,6 @@
   margin-bottom: 32px;
   img {
     height: 36px; width: auto; object-fit: contain; display: block;
-    // logo has black bg - invert in light mode if needed; our bg is white so should look fine
   }
 }
 
@@ -122,7 +122,7 @@
   box-shadow: 0 4px 14px rgba(14,165,160,.35);
   &:hover:not(:disabled) {
     background: #0C8F8A;
-    box-shadow: 0 6px 20px rgba(14,165,160,.45);
+    box-shadow: 0 6px 20px rgba(14, 165, 160, 0.45);
     transform: translateY(-1px);
   }
   &:active { transform: translateY(0); }
@@ -144,7 +144,7 @@
 // ── Right: Illustration ─────────────────────────────────────────────────
 .lp__illus-side {
   background: #0EA5A0;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-end; justify-content: center;
   position: relative; overflow: hidden;
   min-height: 480px;
 
@@ -167,14 +167,24 @@
 
 .lp__illus-inner {
   position: relative; z-index: 1;
-  padding: 24px;
-  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 0; // Touch bottom
 }
 
 .lp__illus-img {
-  width: 100%; max-width: 340px;
+  width: auto;
+  max-width: 820px; 
+  height: auto;
+  max-height: 120%;
   object-fit: contain;
+  object-position: bottom;
+  pointer-events: none;
+  
   // loginillustration.png has black bg - mix-blend-mode to blend with teal bg
   mix-blend-mode: lighten;
   filter: brightness(1.05);
+
+  // Nudge to ensure bottom touch if there's minor asset padding
+  transform: translateY(54px); 
 }

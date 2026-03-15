@@ -59,7 +59,6 @@ export default function AppRoutes() {
         <Route path="pndt"     element={<PndtRegisterPage/>}/>
         <Route path="activity" element={<ClinicActivityPage/>}/>
         <Route path="tests"    element={<TestFeesPage/>}/>
-        <Route path="register" element={<RegisterPatientPage/>}/>
         <Route path="bills"    element={<BillingPage/>}/>
         <Route path="branches" element={<BranchesPage/>}/>
         <Route path="settings" element={<ClinicSettingsPage/>}/>
@@ -72,7 +71,6 @@ export default function AppRoutes() {
         <Route path="queue"    element={<LiveQueuePage/>}/>
         <Route path="register" element={<RegisterPatientPage/>}/>
         <Route path="fform"    element={<FFormPage/>}/>
-        <Route path="register" element={<RegisterPatientPage/>}/>
         <Route path="bills"    element={<BillingPage/>}/>
         <Route path="profile"  element={<ProfilePage/>}/>
       </Route>

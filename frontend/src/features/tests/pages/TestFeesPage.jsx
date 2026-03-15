@@ -38,11 +38,11 @@ export default function TestFeesPage() {
 
   const openEdit = (cat) => {
     setEditCat(cat); setNewCatName(cat.name); setNewCatBase(String(cat.basePrice||''))
-    setSubInputs(cat.subTests.length ? cat.subTests.map(s=>({name:s.name,price:String(s.price)})) : [{name:'',price:''}])
+    setSubInputs(cat.subTests.length ? cat.subTests.map(s=>({name:s.name,price:String(s.price),fformRequired:s.fformRequired||false})) : [{name:'',price:'',fformRequired:false}])
     setShowCatModal(true)
   }
 
-  const addSubRow  = () => setSubInputs(s=>[...s,{name:'',price:''}])
+  const addSubRow  = () => setSubInputs(s=>[...s,{name:'',price:'',fformRequired:false}])
   const rmSubRow   = i => setSubInputs(s=>s.filter((_,j)=>j!==i))
   const updateSub  = (i,k,v) => setSubInputs(s=>s.map((r,j)=>j===i?{...r,[k]:v}:r))
 
@@ -53,7 +53,7 @@ export default function TestFeesPage() {
       const payload = {
         name: newCatName.trim(),
         basePrice: Number(newCatBase)||0,
-        subTests: subInputs.filter(s=>s.name.trim()).map(s=>({name:s.name.trim(),price:Number(s.price)||0})),
+        subTests: subInputs.filter(s=>s.name.trim()).map(s=>({name:s.name.trim(),price:Number(s.price)||0,fformRequired:s.fformRequired||false})),
         isActive: true,
       }
       await api.post('/clinics/my/tests', payload)
@@ -115,7 +115,7 @@ export default function TestFeesPage() {
                 {cat.subTests.map((s,i)=>(
                   <div key={i} className="sub-test">
                     <span>{s.name}</span>
-                    <span className="sub-test__price">₹{s.price}</span>
+                    <span className="sub-test__price">₹{s.price}</span>{s.fformRequired && <span className="badge badge--teal" style={{fontSize:9,marginLeft:4}}>📋 F-Form</span>}
                   </div>
                 ))}
                 {cat.subTests.length===0&&<div className="sub-test td-muted">No sub-tests configured</div>}
@@ -154,6 +154,10 @@ export default function TestFeesPage() {
                       <span style={{position:'absolute',left:'10px',top:'50%',transform:'translateY(-50%)',color:'var(--text-3)',fontSize:'13px'}}>₹</span>
                       <input type="number" value={s.price} onChange={e=>updateSub(i,'price',e.target.value)} placeholder="Price" style={{paddingLeft:'24px',width:'100%'}} min={0} />
                     </div>
+                    <label title="F-Form required for this test" style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer',flexShrink:0,fontSize:11,fontWeight:600,color:s.fformRequired?'var(--teal-dark)':'var(--text-3)'}}>
+                      <input type="checkbox" checked={s.fformRequired||false} onChange={e=>updateSub(i,'fformRequired',e.target.checked)} style={{width:13,height:13,accentColor:'var(--teal)'}} />
+                      📋
+                    </label>
                     <button type="button" className="btn btn--danger btn--sm" onClick={()=>rmSubRow(i)} style={{flexShrink:0}}>✕</button>
                   </div>
                 ))}

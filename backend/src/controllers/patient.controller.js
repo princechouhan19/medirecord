@@ -189,7 +189,8 @@ exports.getPndtRegister = async (req, res, next) => {
     const patients = await Patient.find({
       clinic: clinicId,
       visitDate: { $gte: start, $lte: end },
-      testCategory: { $in: ['Sonography', 'USG'] },
+      // PNDT includes all patients with LMP or sonography/imaging tests
+      $or: [{ lmp: { $exists: true, $ne: null } }, { testCategory: { $regex: /sonography|usg|imaging|ultrasound|x-ray|ct|mri/i } }],
     }).populate('registeredBy', 'name').sort({ tokenNo: 1 });
 
     res.json({ patients, month: m, year: y });
@@ -214,4 +215,46 @@ exports.getActivityLog = async (req, res, next) => {
       .limit(parseInt(limit));
     res.json({ logs });
   } catch (err) { next(err); }
+};
+
+// ── GET patient with clinic info (for A4 record sheet) ─────────────────
+exports.getWithClinic = async (req, res, next) => {
+  try {
+    const patient = await require('../models/Patient.model').findById(req.params.id)
+      .populate('registeredBy', 'name role')
+      .populate('assignedTo',   'name role')
+      .populate('clinic', 'name address phone pndtRegNo logoUrl logo gstSettings');
+    if (!patient) return res.status(404).json({ error: 'Patient not found' });
+    res.json({ patient });
+  } catch(err){ next(err); }
+};
+
+// ── Doctor referral stats for admin/clinic owner ──────────────────────
+exports.getDoctorReferralStats = async (req, res, next) => {
+  try {
+    const clinicId = req.user.clinic?._id || req.user.clinic;
+    const query = {};
+    if (req.user.role !== 'superadmin' && clinicId) query.clinic = clinicId;
+
+    // Aggregate referrals by doctor name
+    const stats = await require('../models/Patient.model').aggregate([
+      { $match: { ...query, 'referredDoctor.name': { $exists: true, $ne: '' } } },
+      { $group: {
+        _id: '$referredDoctor.name',
+        doctorName:     { $first: '$referredDoctor.name' },
+        doctorType:     { $first: '$referredDoctor.type' },
+        qualification:  { $first: '$referredDoctor.qualification' },
+        address:        { $first: '$referredDoctor.address' },
+        city:           { $first: '$referredDoctor.city' },
+        phone:          { $first: '$referredDoctor.phone' },
+        totalReferrals: { $sum: 1 },
+        totalRevenue:   { $sum: '$fee' },
+        paidRevenue:    { $sum: { $cond: ['$isPaid', '$fee', 0] } },
+        lastReferral:   { $max: '$createdAt' },
+      }},
+      { $sort: { totalReferrals: -1 } },
+      { $limit: 50 },
+    ]);
+    res.json({ stats });
+  } catch(err){ next(err); }
 };

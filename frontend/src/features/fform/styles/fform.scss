@@ -1,84 +1,123 @@
-.fform-page { max-width: 900px; }
-
-.fform-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-bottom: 18px;
-  h1 { font-size: 22px; font-weight: 800; }
-  p  { color: var(--text-2); font-size: 13px; margin-top: 2px; }
+// ── Section tabs ─────────────────────────────────────────────────────
+.fform-sections {
+  display: flex; gap: 3px; margin-bottom: 0; overflow-x: auto;
+  background: var(--bg); padding: 6px 6px 0;
+  border: 1px solid var(--border); border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  -webkit-overflow-scrolling: touch;
+  @media(max-width:600px){ gap:2px; }
 }
 
-.fform-badge {
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; background: var(--teal-light);
-  border-radius: 100px; font-size: 12px; font-weight: 600; color: var(--teal-dark);
-  border: 1px solid rgba(14,165,160,.2);
+.fform-sec-btn {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 8px 14px; border-radius: 7px 7px 0 0;
+  background: transparent; color: var(--text-2); cursor: pointer;
+  border: none; border-bottom: 2px solid transparent;
+  transition: all var(--ease); white-space: nowrap; min-width: fit-content;
+  font-size: 12px; gap: 2px;
+  &:hover { background: white; color: var(--text-1); }
+  &--active { background: white; color: var(--teal); border-bottom-color: var(--teal); }
+  @media(max-width:480px){ padding:7px 9px; }
 }
 
-.fform-tabs {
-  display: flex; gap: 2px;
-  background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); padding: 3px; margin-bottom: 18px;
-  width: fit-content; box-shadow: var(--shadow-sm);
+.fform-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius); padding: 20px;
+  @media(max-width:600px){ padding:14px 12px; }
 }
 
-.fform-tab {
-  padding: 7px 18px; border-radius: 5px; font-size: 13px; font-weight: 600;
-  color: var(--text-2); transition: all var(--ease);
-  display: flex; align-items: center; gap: 6px;
-  &:hover { color: var(--text-1); }
-  &--on { background: var(--teal); color: white; &:hover { background: var(--teal-dark); } }
-  &__ct {
-    background: rgba(255,255,255,.25); border-radius: 100px;
-    padding: 1px 6px; font-size: 10px; font-weight: 800;
-  }
+.fform-section { display: flex; flex-direction: column; gap: 14px; }
+
+.fform-section-title {
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .06em; color: #0C8F8A;
+  padding-bottom: 10px; border-bottom: 2px solid var(--teal-light);
 }
 
-.fform-body { display: flex; flex-direction: column; gap: 14px; }
-
-.ff-sec {
-  padding: 20px 22px; display: flex; flex-direction: column; gap: 14px;
-  &__hd {
-    display: flex; align-items: center; gap: 10px;
-    padding-bottom: 12px; border-bottom: 1px solid var(--border);
-    font-size: 14px; font-weight: 700;
-  }
-  &__num {
-    width: 22px; height: 22px; background: var(--teal); color: white;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; flex-shrink: 0;
-  }
+// ── Patient info bar ──────────────────────────────────────────────────
+.fform-patient-bar {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+  gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  &__item { padding: 7px 10px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+  &__label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-3); letter-spacing: .05em; display: block; margin-bottom: 1px; }
+  &__val { font-size: 12px; font-weight: 700; color: var(--text-1); }
+  @media(max-width:600px){ grid-template-columns:1fr 1fr; }
 }
 
-.ff-hint { margin-left: 6px; font-size: 10px; color: var(--teal-dark); font-weight: 600; background: var(--teal-light); padding: 1px 7px; border-radius: 100px; text-transform: none; letter-spacing: 0; }
-
-.ff-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-.ff-vitals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-.ff-ai-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: var(--radius-sm);
-  font-size: 12px; font-weight: 700;
-  background: linear-gradient(135deg, #6366F1, #8B5CF6);
-  color: white; cursor: pointer; border: none;
-  transition: all var(--ease); white-space: nowrap;
-  &:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,.4); }
-  &:disabled { opacity: .65; transform: none; }
+// ── 23 USG Indications ────────────────────────────────────────────────
+.fform-indications {
+  display: flex; flex-direction: column; gap: 4px;
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  &--sm { display: grid; grid-template-columns: 1fr 1fr; @media(max-width:600px){ grid-template-columns:1fr; } }
 }
 
-.ff-spinner {
-  width: 12px; height: 12px;
-  border: 2px solid rgba(255,255,255,.3); border-top-color: white;
-  border-radius: 50%; animation: spin .7s linear infinite; display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.ff-icd { display: flex; gap: 8px;
-  input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; outline: none; font-family: var(--font-ui);
-    &:focus { border-color: var(--teal); }
-  }
+.fform-indication {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 12px; font-size: 12.5px; cursor: pointer;
+  border-bottom: 1px solid var(--border); transition: background var(--ease);
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--bg); }
+  &--checked { background: var(--teal-light); color: var(--teal-dark); font-weight: 600; }
+  strong { font-size: 11px; color: var(--text-3); margin-right: 2px; flex-shrink: 0; }
 }
 
-.ff-num { font-family: var(--font-num); font-size: 12px; background: var(--bg); padding: 2px 8px; border-radius: 4px; color: var(--text-2); font-weight: 700; }
+// ── Vitals grid ───────────────────────────────────────────────────────
+.fform-vitals-grid {
+  display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 14px;
+  @media(max-width:900px){ grid-template-columns:repeat(3,1fr); }
+  @media(max-width:500px){ grid-template-columns:repeat(2,1fr); }
+}
 
-.fform-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 4px 0 8px; }
+.fform-vital-box {
+  background: var(--bg); border-radius: 8px; padding: 8px 10px;
+  border: 1.5px solid var(--border); transition: border-color var(--ease);
+  &:focus-within { border-color: var(--teal); }
+  label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--text-3); letter-spacing: .05em; display: block; margin-bottom: 4px; }
+  input { width: 100%; border: none; background: transparent; font-size: 14px; font-weight: 700; outline: none; font-family: var(--font-num); color: var(--text-1); &::placeholder{ color: var(--text-3); font-family: var(--font-ui); font-size: 12px; } }
+}
+
+// ── Declaration box ───────────────────────────────────────────────────
+.fform-declaration-box {
+  background: var(--bg); border-radius: 8px; padding: 14px 16px;
+  border: 1px solid var(--border); font-size: 13px;
+}
+
+.fform-check-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  padding: 6px 0;
+}
+
+// ── FForm view modal ──────────────────────────────────────────────────
+.fform-view { position: fixed; inset: 0; z-index: 1000; background: rgba(15,23,42,.5); overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; }
+.fform-view-inner { background: white; border-radius: 14px; max-width: 860px; width: 100%; box-shadow: var(--shadow-lg); overflow: hidden; }
+.fform-view-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+.fform-view-actions { display: flex; gap: 8px; align-items: center; }
+.fform-view-close { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-3); transition: all var(--ease); font-size: 14px; &:hover { background: var(--red-bg); color: var(--red); } }
+.fform-view-body { padding: 24px; overflow-y: auto; max-height: 80vh; }
+
+// ── Section navigation tabs ────────────────────────────────────────────
+.fform-sec-tabs {
+  display: flex; gap: 3px; margin-bottom: 0; overflow-x: auto;
+  background: var(--bg); border-radius: var(--radius) var(--radius) 0 0;
+  padding: 6px 6px 0; border: 1px solid var(--border); border-bottom: none;
+  -webkit-overflow-scrolling: touch;
+}
+.fform-sec-tab {
+  padding: 8px 14px; border-radius: 6px 6px 0 0; font-size: 12.5px; font-weight: 600;
+  color: var(--text-2); background: transparent; cursor: pointer; white-space: nowrap;
+  border: none; border-bottom: 2px solid transparent; transition: all var(--ease);
+  &:hover { color: var(--text-1); background: white; }
+  &--active { color: var(--teal); background: white; border-bottom-color: var(--teal); }
+  @media(max-width:480px) { padding: 7px 10px; font-size: 11px; }
+}
+.fform-section-body {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius); padding: 20px;
+  @media(max-width: 600px) { padding: 14px; }
+}
+.fform-sec-title {
+  font-weight: 800; font-size: 14px; color: var(--text-1);
+  padding-bottom: 12px; border-bottom: 2px solid var(--teal);
+  margin-bottom: 18px; color: var(--teal-dark);
+}

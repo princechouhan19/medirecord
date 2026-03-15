@@ -47,7 +47,6 @@ export default function LoginPage() {
       <div className="lp__card" ref={wrapRef}>
         {/* ── Left: form ── */}
         <div className="lp__form-side" ref={formRef}>
-          <div className="lp__form-container">
           <div className="lp__logo">
             <img src="/logo.png" alt="MediRecord" />
           </div>
@@ -112,9 +111,8 @@ export default function LoginPage() {
             </button>
           </form>
 
-            <div className="lp__footer">
-              MediRecord © {new Date().getFullYear()} · Smart EMR for Indian Clinics
-            </div>
+          <div className="lp__footer">
+            MediRecord © {new Date().getFullYear()} · Smart EMR for Indian Clinics
           </div>
         </div>
 

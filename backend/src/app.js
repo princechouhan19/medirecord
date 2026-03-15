@@ -11,7 +11,8 @@ const trackingRoutes = require('./routes/tracking.routes');
 const fformRoutes = require('./routes/fform.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const clinicRoutes = require('./routes/clinic.routes');
-const billRoutes   = require('./routes/bill.routes');
+const billRoutes         = require('./routes/bill.routes');
+const referredDoctorRoutes = require('./routes/referredDoctor.routes');
 
 const errorHandler = require('./middlewares/error.middleware');
 const path = require('path');
@@ -38,6 +39,8 @@ app.use('/api/tracking', trackingRoutes);
 app.use('/api/fform', fformRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/bills',  billRoutes);
+app.use('/api/referred-doctors', referredDoctorRoutes);
+app.use('/api/admin/referred-doctors', referredDoctorRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

@@ -7,7 +7,7 @@ exports.getAll = async (req, res, next) => {
       ? { clinic: req.user.clinic } 
       : {};
     const forms = await FForm.find(query)
-      .populate('patient', 'name age gender phone')
+      .populate('patient', 'name age gender dob phone email address district state relationType relativeName husbandName lmp weeksOfPregnancy daysOfPregnancy edd livingChildrenMale livingChildrenFemale idProofType idProofNo idProofFront idProofBack referredDoctor referralSlip fformRequired visitDate tokenNo pctsId patientRegDate areaType')
       .populate('createdBy', 'name')
       .sort({ createdAt: -1 });
     res.json({ forms });
@@ -17,7 +17,7 @@ exports.getAll = async (req, res, next) => {
 exports.getOne = async (req, res, next) => {
   try {
     const form = await FForm.findById(req.params.id)
-      .populate('patient', 'name age gender phone aadhaar address')
+      .populate('patient', 'name age gender dob phone email address district state relationType relativeName husbandName lmp weeksOfPregnancy daysOfPregnancy edd livingChildrenMale livingChildrenFemale idProofType idProofNo idProofFront idProofBack referredDoctor referralSlip fformRequired visitDate tokenNo pctsId patientRegDate areaType')
       .populate('createdBy', 'name')
       .populate('clinic', 'name address phone logoUrl logo pndtRegNo');
     if (!form) return res.status(404).json({ error: 'Form not found' });
@@ -38,7 +38,7 @@ exports.create = async (req, res, next) => {
   try {
     const clinic = req.user.clinic || null;
     const form = await FForm.create({ ...req.body, createdBy: req.user._id, clinic });
-    await form.populate('patient', 'name age gender phone');
+    await form.populate('patient', 'name age gender dob phone email address district state relationType relativeName husbandName lmp weeksOfPregnancy daysOfPregnancy edd livingChildrenMale livingChildrenFemale idProofType idProofNo idProofFront idProofBack referredDoctor referralSlip fformRequired visitDate tokenNo pctsId patientRegDate areaType');
     await form.populate('createdBy', 'name');
     res.status(201).json({ form });
   } catch (err) { next(err); }
@@ -47,7 +47,7 @@ exports.create = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const form = await FForm.findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate('patient', 'name age gender phone')
+      .populate('patient', 'name age gender dob phone email address district state relationType relativeName husbandName lmp weeksOfPregnancy daysOfPregnancy edd livingChildrenMale livingChildrenFemale idProofType idProofNo idProofFront idProofBack referredDoctor referralSlip fformRequired visitDate tokenNo pctsId patientRegDate areaType')
       .populate('createdBy', 'name');
     if (!form) return res.status(404).json({ error: 'Form not found' });
     res.json({ form });

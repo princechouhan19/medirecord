@@ -8,12 +8,14 @@ router.use(authenticate);
 router.get('/today',      c.getTodayQueue);        // live daily queue
 router.get('/stats',      c.getStats);
 router.get('/pndt',       c.getPndtRegister);       // 12-col PNDT register
-router.get('/activity',   c.getActivityLog);        // audit log for owner
+router.get('/activity',        c.getActivityLog);
+router.get('/referral-stats',  c.getDoctorReferralStats);        // audit log for owner
 router.get('/',           c.getAll);
+router.get('/:id/full',   c.getWithClinic);  // includes clinic for A4 sheet
 router.get('/:id',        c.getOne);
 
 // Receptionist: register new patient
-router.post('/', requireRole('receptionist', 'clinic_owner', 'superadmin'), c.create);
+router.post('/', requireRole('receptionist', 'clinic_owner', 'superadmin'), c.create); // admin can also register
 
 // Lab handler + owner: update status
 router.patch('/:id/status', requireRole('lab_handler', 'receptionist', 'clinic_owner', 'superadmin'), c.updateStatus);

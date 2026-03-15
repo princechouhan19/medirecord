@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 
 // Sub-test schema (e.g. USG > Obstetric, TVS, ABD)
 const subTestSchema = new mongoose.Schema({
-  name:  { type: String, required: true },
-  price: { type: Number, default: 0 },
-  code:  { type: String, default: '' },
+  name:          { type: String, required: true },
+  price:         { type: Number, default: 0 },
+  code:          { type: String, default: '' },
+  fformRequired: { type: Boolean, default: false }, // show F-Form tick on registration
 }, { _id: true });
 
 // Main test category (e.g. Sonography, X-Ray, Blood Test)

@@ -2,75 +2,535 @@ import { useRef } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import '../styles/fformview.scss'
 
+// ── USG Indications list (23 items from PC & PNDT Act) ─────────────────
+const USG_IND = [
+  ['i_viability',           'i.',   'To diagnose intra-uterine and/or ecotopic pregnancy & confirm viability'],
+  ['ii_dating',             'ii.',  'Estimation of gestational age (dating)'],
+  ['iii_fetuses',           'iii.', 'Detection of number of fetuses and their chorionicity'],
+  ['iv_iucd_mtp',           'iv.',  'Suspected pregnancy with IUCD in-situ or suspected pregnancy following contraceptive failure / MTP failure'],
+  ['v_bleeding',            'v.',   'Vaginal bleeding / Leaking'],
+  ['vi_abortion',           'vi.',  'Follow-up of case of abortion'],
+  ['vii_cervical',          'vii.', 'Assessment of cervical canal and diameter of internal os'],
+  ['viii_discrepancy',      'viii.','Discrepancy between uterine size and period of amenorrhea'],
+  ['ix_adnexal',            'ix.',  'Any suspected adnexal or uterine pathology/abnormality'],
+  ['x_chromosomal',         'x.',   'Detection of chromosomal abnormalities, fetal structural defects and other abnormalities and their follow-up'],
+  ['xi_presentation',       'xi.',  'To evaluate fetal presentation and position'],
+  ['xii_liquor',            'xii.', 'Assessment of liquor amnii'],
+  ['xiii_preterm',          'xiii.','Preterm labor / preterm premature rupture of membranes'],
+  ['xiv_placenta',          'xiv.', 'Evaluation of placement position, thickness, grading and abnormalities (placenta previa, retro placental haemorrhage, abnormal adherence etc.)'],
+  ['xv_umbilical',          'xv.',  'Evaluation of umbilical cord-presentation, insertion, nuchal encirclement, number of vessels, and presence of true knot'],
+  ['xvi_caesarean',         'xvi.', 'Evaluation of previous caesarean section scars'],
+  ['xvii_growth',           'xvii.','Evaluation of fetal growth parameters, fetal weight and fetal well being'],
+  ['xviii_doppler',         'xviii.','Colour flow mapping and duplex Doppler studies'],
+  ['xix_guided',            'xix.', 'Ultrasound guided procedures such as medical termination of pregnancy, external cephalic version etc. and their follow-up'],
+  ['xx_invasive',           'xx.',  'Adjunct to diagnostic and therapeutic invasive intervention such as chorionic villus sampling (CVS), amniocenteses fetal blood sampling fetal skin biopsy, amnio-infusion, intrauterine infusion, placements of shunts etc.'],
+  ['xxi_intrapartum',       'xxi.', 'Observation of intra-partum events'],
+  ['xxii_medical_surgical', 'xxii.','Medical / Surgical conditions complicating pregnancy'],
+  ['xxiii_research',        'xxiii.','Research/scientific studies in recognized institutions'],
+]
+
+// ── Build the complete Form F HTML — mirrors the physical govt form ─────
+function buildFormFHtml(form, clinic, user) {
+  const p   = form.patient || {}
+  const sA  = form.sectionA  || {}
+  const sB  = form.sectionB  || {}
+  const sC  = form.sectionC  || {}
+  const sD  = form.sectionD  || {}
+  const ind = sB.indications || {}
+  const cInd= sC.indications || {}
+  const cProc = sC.procedure || {}
+  const cDiag = sC.diagnosisBasis || {}
+  const cAT   = sC.additionalTests || {}
+
+  const clinicName    = clinic?.name    || user?.clinic?.name || 'MediRecord Clinic'
+  const clinicAddr    = clinic?.address || user?.clinic?.address || ''
+  const clinicPndt    = clinic?.pndtRegNo || user?.clinic?.pndtRegNo || ''
+  const clinicLogo    = clinic?.logoUrl || clinic?.logo || ''
+
+  const fmt = d => d ? new Date(d).toLocaleDateString('en-IN', {day:'2-digit',month:'2-digit',year:'numeric'}) : '___________'
+  const val = v => v || '___________'
+  const tick = v => v ? '<b>✓</b>' : '□'
+  const lmp = p.lmp ? fmt(p.lmp) : '___________'
+  const weeks = p.weeksOfPregnancy != null ? `${p.weeksOfPregnancy} wk${p.daysOfPregnancy ? ` ${p.daysOfPregnancy}d` : ''}` : ''
+  const relative = p.relativeName
+    ? `${p.relationType || 'Husband'}'s Name: ${p.relativeName}`
+    : p.husbandName ? `Husband's Name: ${p.husbandName}` : '___________'
+  const children = `${p.livingChildrenMale||0} Sons${p.livingChildrenMaleAge?' ('+p.livingChildrenMaleAge+')':''}, ${p.livingChildrenFemale||0} Daughters${p.livingChildrenFemaleAge?' ('+p.livingChildrenFemaleAge+')':''}`
+  const referredBy = p.referredDoctor?.name
+    ? `${p.referredDoctor.name}${p.referredDoctor.qualification?' ('+p.referredDoctor.qualification+')':''}, ${p.referredDoctor.address||''}`
+    : p.referredBy || '___________'
+  const address = [p.address, p.district, p.state].filter(Boolean).join(', ') || '___________'
+  const procedureDate = sA.procedureDate ? fmt(sA.procedureDate) : fmt(p.visitDate)
+  const declarationDate = sA.declarationDate ? fmt(sA.declarationDate) : fmt(p.patientRegDate || p.visitDate)
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Form F — ${form.formNumber || 'PNDT Form'}</title>
+<style>
+  /* ── Reset ── */
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Times New Roman',Times,serif;font-size:9pt;color:#000;background:#fff}
+
+  /* ── Page ── */
+  .page{width:210mm;min-height:297mm;padding:8mm 10mm;display:block}
+
+  /* ── Header ── */
+  .form-header{border:2px solid #000;padding:4px 8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start}
+  .form-title-block{flex:1}
+  .form-title-main{font-size:8pt;font-weight:bold;text-transform:uppercase;line-height:1.4}
+  .form-title-sub{font-size:7.5pt;font-style:italic;line-height:1.3}
+  .clinic-block{border-left:1px solid #000;padding-left:10px;min-width:180px;text-align:right}
+  .clinic-name{font-size:9pt;font-weight:bold}
+  .clinic-addr{font-size:7.5pt;margin-top:2px}
+  .clinic-reg{font-size:8pt;font-weight:bold;margin-top:3px}
+  .clinic-logo{max-height:32px;object-fit:contain;display:block;margin-bottom:3px;margin-left:auto}
+
+  /* ── Section headings ── */
+  .sec-head{background:#000;color:#fff;font-size:8pt;font-weight:bold;padding:2px 6px;margin:5px 0 3px;text-transform:uppercase;letter-spacing:.03em}
+  .sec-head-sm{background:#333;color:#fff;font-size:7.5pt;font-weight:bold;padding:2px 6px;margin:3px 0 2px}
+
+  /* ── Field rows ── */
+  .field-row{display:flex;align-items:baseline;margin-bottom:3px;font-size:8.5pt;line-height:1.4}
+  .field-label{font-weight:normal;white-space:nowrap;margin-right:4px;flex-shrink:0}
+  .field-val{border-bottom:1px solid #000;flex:1;min-height:11px;padding:0 3px;font-size:8.5pt;font-style:italic}
+  .field-val-bold{font-weight:bold;font-style:normal}
+
+  /* ── Two-column body ── */
+  .body-cols{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1.5px solid #000}
+  .col-left{padding-right:8px;border-right:1.5px solid #000}
+  .col-right{padding-left:8px}
+
+  /* ── Indication checkboxes ── */
+  .ind-list{list-style:none;padding:0;margin:2px 0}
+  .ind-item{display:flex;gap:4px;margin-bottom:1.5px;font-size:7.5pt;line-height:1.3;align-items:flex-start}
+  .ind-num{flex-shrink:0;width:22px;font-weight:bold}
+  .ind-chk{flex-shrink:0;width:11px;font-size:9pt}
+  .ind-txt{flex:1}
+
+  /* ── Checkboxes in a row ── */
+  .chk-row{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0;font-size:8pt}
+  .chk-item{display:flex;align-items:center;gap:3px}
+
+  /* ── Declaration box ── */
+  .declaration{border:1px solid #000;padding:5px 7px;margin:4px 0;font-size:8pt;line-height:1.5}
+  .decl-gu{font-size:8.5pt;line-height:1.6;margin-top:4px;border-top:1px dashed #666;padding-top:3px}
+
+  /* ── Signature area ── */
+  .sig-row{display:flex;justify-content:space-between;margin-top:6px;gap:10px}
+  .sig-box{flex:1}
+  .sig-line{border-top:1px solid #000;margin-top:20px;padding-top:3px;font-size:8pt;text-align:center}
+  .sig-date{font-size:8pt;margin-bottom:3px}
+
+  /* ── Thumb impression section ── */
+  .thumb-section{border:1px solid #555;padding:4px 6px;font-size:8pt;margin-top:4px}
+
+  /* ── Section B right ── */
+  .proc-result{margin-top:4px}
+  .result-line{border-bottom:1px solid #000;min-height:10px;margin:2px 0;font-size:8pt;padding:0 3px;font-style:italic}
+
+  /* ── Util ── */
+  .bold{font-weight:bold}
+  .italic{font-style:italic}
+  .underline{text-decoration:underline}
+  .indent{margin-left:12px}
+  .mt2{margin-top:2px}
+  .mt4{margin-top:4px}
+  .small{font-size:7.5pt}
+  .form-no{font-size:8pt;font-weight:bold;float:right;margin-top:-2px}
+
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:7mm 9mm;width:100%}
+    @page{size:A4;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══ FORM HEADER ════════════════════════════════════════════════════ -->
+<div class="form-header">
+  <div class="form-title-block">
+    <div class="form-title-main">FORM F &nbsp; [See Proviso to Section 4(3), rule 9(4) and rule 10(1A)]</div>
+    <div class="form-title-sub">FORM FOR MAINTENANCE OF RECORD IN CASE OF PRENATAL DIAGNOSTIC TEST / PROCEDURE<br>BY GENETIC CLINIC / ULTRASOUND CLINIC / IMAGING CENTRE</div>
+  </div>
+  <div class="clinic-block">
+    ${clinicLogo ? `<img src="${clinicLogo}" class="clinic-logo" alt="">` : ''}
+    <div class="clinic-name">${clinicName}</div>
+    ${clinicAddr ? `<div class="clinic-addr">${clinicAddr}</div>` : ''}
+    ${clinicPndt ? `<div class="clinic-reg">Reg. No. ${clinicPndt}</div>` : ''}
+  </div>
+</div>
+<div class="form-no">Form No.: <span style="text-decoration:underline">${form.formNumber || ''}</span></div>
+
+<!-- ══ SECTION A ══════════════════════════════════════════════════════ -->
+<div class="sec-head">Section A : To be filled in for all Diagnostic Procedures / Tests</div>
+
+<div class="field-row">
+  <span class="field-label">1. Name and complete address of Genetic Clinic / Ultrasound Clinic / Imaging Center :</span>
+  <span class="field-val field-val-bold">${clinicName}${clinicAddr ? ', ' + clinicAddr : ''}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">2. Registration No. (Under PC &amp; PNDT Act, 1994) :</span>
+  <span class="field-val field-val-bold">${val(clinicPndt)}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">3. Patient's name :</span>
+  <span class="field-val field-val-bold">${val(p.name)}</span>
+  <span style="margin-left:8px" class="field-label">Age :</span>
+  <span class="field-val field-val-bold" style="max-width:60px">${p.age ? p.age + ' ' + (p.ageUnit||'yrs') : '___'}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">4. Total Number of living children :</span>
+  <span class="field-val field-val-bold">${(p.livingChildrenMale||0) + (p.livingChildrenFemale||0)}</span>
+</div>
+<div class="field-row indent">
+  <span class="field-label">(a) Number of living Sons with age :</span>
+  <span class="field-val field-val-bold">${p.livingChildrenMale||0}${p.livingChildrenMaleAge ? ' — Ages: ' + p.livingChildrenMaleAge : ''}</span>
+</div>
+<div class="field-row indent">
+  <span class="field-label">(b) Number of living Daughters with age :</span>
+  <span class="field-val field-val-bold">${p.livingChildrenFemale||0}${p.livingChildrenFemaleAge ? ' — Ages: ' + p.livingChildrenFemaleAge : ''}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">5. ${p.relationType ? p.relationType + "'s" : "Husband's/Wife's/Father's/Mother's"} Name :</span>
+  <span class="field-val field-val-bold">${val(p.relativeName || p.husbandName)}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">6. Full postal address of the patient with Contact Number, if any :</span>
+  <span class="field-val field-val-bold">${val(address)}${p.phone ? ' — Ph: ' + p.phone : ''}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">7. (a) Referred by (Full name and address of Doctor(s)/Genetic Counseling Centre) :</span>
+  <span class="field-val field-val-bold">${val(referredBy)}</span>
+</div>
+<div class="field-row indent">
+  <span class="field-label small italic">(Referral slips to be preserved carefully with Form F)</span>
+</div>
+<div class="field-row">
+  <span class="field-label">&nbsp;&nbsp;&nbsp;&nbsp;(b) Self-Referral by Gynaecologist/Radiologist/Registered Medical Practitioner :</span>
+  <span class="field-val">${sB.performedBy && !p.referredDoctor?.name ? sB.performedBy : ''}</span>
+</div>
+<div class="field-row">
+  <span class="field-label">8. Last menstrual period / weeks of pregnancy :</span>
+  <span class="field-val field-val-bold">${lmp}${weeks ? ' / ' + weeks : ''}</span>
+</div>
+
+<!-- ══ TWO-COLUMN BODY (Section B left, Section C right) ════════════ -->
+<div class="body-cols">
+
+<!-- ── LEFT COLUMN: SECTION B ──────────────────────────────────────── -->
+<div class="col-left">
+  <div class="sec-head-sm">Section B : To be Filled in for performing non-invasive diagnostic Procedures / Tests Only</div>
+
+  <div class="field-row mt2">
+    <span class="field-label">9. Name of the doctor performing the procedure/s :</span>
+    <span class="field-val field-val-bold">${val(sB.performedBy || sA.doctorName)}</span>
+  </div>
+
+  <div class="mt2 bold small">10. Indication/s for diagnosis procedure :</div>
+  <div class="small italic indent" style="margin-bottom:2px">(Put a "Tick" against the appropriate indication/s)</div>
+
+  <ul class="ind-list">
+    ${USG_IND.map(([key, num, label]) => `
+    <li class="ind-item">
+      <span class="ind-num">${num}</span>
+      <span class="ind-chk">${ind[key] ? '☑' : '☐'}</span>
+      <span class="ind-txt">${label}</span>
+    </li>`).join('')}
+    <li class="ind-item">
+      <span class="ind-num"></span>
+      <span class="ind-chk"></span>
+      <span class="ind-txt">Any other (specify): <span style="border-bottom:1px solid #000;display:inline-block;min-width:80px;font-style:italic">${ind.other || ''}</span></span>
+    </li>
+  </ul>
+
+  <div class="field-row mt2">
+    <span class="field-label bold">11. Procedures carried out (Non-Invasive) — <span class="small italic">(Put a "Tick")</span></span>
+  </div>
+  <div class="chk-row indent">
+    <span class="chk-item">${sB.procedureType==='Ultrasound'||!sB.procedureType ? '☑' : '☐'} <span>i. Ultrasound</span></span>
+    <span class="chk-item">${sB.procedureType==='Other' ? '☑' : '☐'} <span>ii. Any other (specify): <span style="border-bottom:1px solid #000;display:inline-block;min-width:60px;font-style:italic">${sB.procedureOther||''}</span></span></span>
+  </div>
+
+  <div class="field-row mt2">
+    <span class="field-label">12. Date on which declaration of pregnant woman/person was obtained :</span>
+    <span class="field-val field-val-bold">${declarationDate}</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">13. Date on which procedures carried out :</span>
+    <span class="field-val field-val-bold">${procedureDate}</span>
+  </div>
+  <div class="bold small mt2">14. Result of the non-invasive procedure carried out <span class="italic">(report in brief including ultrasound carried out)</span> :</div>
+  <div class="proc-result">
+    ${sB.resultBrief
+      ? `<div class="result-line">${sB.resultBrief}</div>`
+      : `<div class="result-line"></div><div class="result-line"></div><div class="result-line"></div>`
+    }
+  </div>
+  <div class="field-row mt2">
+    <span class="field-label">15. The result of pre-natal diagnostic procedure were conveyed to</span>
+  </div>
+  <div class="field-row">
+    <span class="field-val field-val-bold">${val(sB.conveyedTo)}</span>
+    <span style="margin:0 4px"> on </span>
+    <span class="field-val field-val-bold" style="max-width:90px">${sB.conveyedDate ? fmt(sB.conveyedDate) : '___________'}</span>
+  </div>
+  <div class="field-row mt2">
+    <span class="field-label">16. Any indication for MTP as per the abnormality detected in the diagnostic procedures / tests :</span>
+  </div>
+  <div class="field-val" style="display:block;min-height:14px;border-bottom:1px solid #000;font-style:italic">${sB.mtpIndication || ''}</div>
+</div>
+
+<!-- ── RIGHT COLUMN: SECTION C ─────────────────────────────────────── -->
+<div class="col-right">
+  <div class="sec-head-sm">Section C : To be Filled for Invasive Procedures / Tests Only</div>
+
+  <div class="field-row mt2">
+    <span class="field-label">17. Name of the doctor performing the procedure/s :</span>
+    <span class="field-val field-val-bold">${sC.enabled ? val(sC.performedBy) : ''}</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">18. History of genetic/medical disease in the family (specify) :</span>
+    <span class="field-val" style="font-style:italic">${sC.enabled ? (sC.familyHistory || '') : ''}</span>
+  </div>
+  <div class="small mt2">basis of diagnosis <span class="italic">(Tick on appropriate basis of diagnosis)</span>:</div>
+  <div class="chk-row small indent">
+    <span class="chk-item">${sC.enabled&&cDiag.clinical   ?'☑':'☐'} (a) Clinical</span>
+    <span class="chk-item">${sC.enabled&&cDiag.biochemical?'☑':'☐'} (b) Bio-Chemical</span>
+    <span class="chk-item">${sC.enabled&&cDiag.cytogenetic?'☑':'☐'} (c) Cytogenetic</span>
+    <span class="chk-item">${sC.enabled&&cDiag.other?'☑':'☐'} (d) other: <span style="border-bottom:1px solid #000;display:inline-block;min-width:50px;font-style:italic">${sC.enabled?cDiag.other||'':''}</span></span>
+  </div>
+
+  <div class="small mt2 bold">19. Indication/s for the diagnosis procedure <span class="italic">("Tick" on appropriate indication/s)</span></div>
+  <div class="small indent mt2">A. Previous child/children with:</div>
+  <div class="chk-row small indent" style="margin-left:20px">
+    <span class="chk-item">${sC.enabled&&cInd.chromosomal   ?'☑':'☐'} (i) chromosomal disorders</span>
+    <span class="chk-item">${sC.enabled&&cInd.metabolic     ?'☑':'☐'} (ii) Metabolic disorders</span>
+    <span class="chk-item">${sC.enabled&&cInd.congenital    ?'☑':'☐'} (iii) Congenital anomaly</span>
+    <span class="chk-item">${sC.enabled&&cInd.mentalDisability?'☑':'☐'} (iv) Mental Disability</span>
+    <span class="chk-item">${sC.enabled&&cInd.haemoglobin   ?'☑':'☐'} (v) Haemoglobin opathy</span>
+    <span class="chk-item">${sC.enabled&&cInd.sexLinked     ?'☑':'☐'} (vi) Sex linked disorders</span>
+    <span class="chk-item">${sC.enabled&&cInd.singleGene    ?'☑':'☐'} (vii) Single gene disorder</span>
+    <span class="chk-item">${sC.enabled&&cInd.other?'☑':'☐'} (viii) Any other: <span style="border-bottom:1px solid #000;display:inline-block;min-width:50px;font-style:italic">${sC.enabled?cInd.other||'':''}</span></span>
+  </div>
+  <div class="chk-row small indent">
+    <span class="chk-item">${sC.enabled&&cInd.advancedAge?'☑':'☐'} B. Advanced maternal age (35 years)</span>
+    <span class="chk-item">C. Mother/Father/sibling has genetic disease: <span style="border-bottom:1px solid #000;display:inline-block;min-width:60px;font-style:italic">${sC.enabled?cInd.genetic||'':''}</span></span>
+  </div>
+  <div class="field-row small indent">
+    <span class="field-label">D. other (specify):</span>
+    <span class="field-val">${sC.enabled?cInd.other2||'':''}</span>
+  </div>
+
+  <div class="field-row mt2">
+    <span class="field-label">20. Date on which consent of pregnant woman/person was obtained in Form G :</span>
+    <span class="field-val field-val-bold">${sC.enabled&&sC.consentDate ? fmt(sC.consentDate) : '___________'}</span>
+  </div>
+
+  <div class="small mt2 bold">21. Invasive procedures carried out <span class="italic">("Tick" on appropriate indication/s)</span></div>
+  <div class="chk-row small indent">
+    <span class="chk-item">${sC.enabled&&cProc.amniocentesis?'☑':'☐'} i. Amniocentesis</span>
+    <span class="chk-item">${sC.enabled&&cProc.cvs         ?'☑':'☐'} ii. Chorionic Villi aspiration</span>
+    <span class="chk-item">${sC.enabled&&cProc.fetalBiopsy ?'☑':'☐'} iii. Fetal Biopsy</span>
+    <span class="chk-item">${sC.enabled&&cProc.cordocentesis?'☑':'☐'} iv. Cordocentesis</span>
+    <span class="chk-item">${sC.enabled&&cProc.other?'☑':'☐'} v. Any other: <span style="border-bottom:1px solid #000;display:inline-block;min-width:50px">${sC.enabled?cProc.other||'':''}</span></span>
+  </div>
+
+  <div class="field-row mt2">
+    <span class="field-label">22. Any complication/s of invasive procedure (specify) :</span>
+    <span class="field-val" style="font-style:italic">${sC.enabled?sC.complications||'':''}</span>
+  </div>
+  <div class="small mt2">23. Additional tests recommended <span class="italic">(please mention if applicable)</span></div>
+  <div class="chk-row small indent">
+    <span class="chk-item">${sC.enabled&&cAT.chromosomal    ?'☑':'☐'} (i) Chromosomal studies</span>
+    <span class="chk-item">${sC.enabled&&cAT.biochemical    ?'☑':'☐'} (ii) Biochemical studies</span>
+    <span class="chk-item">${sC.enabled&&cAT.molecular      ?'☑':'☐'} (iii) Molecular studies</span>
+    <span class="chk-item">${sC.enabled&&cAT.preimplantation?'☑':'☐'} (iv) Pre-implantation gender diagnosis</span>
+    <span class="chk-item">${sC.enabled&&cAT.other?'☑':'☐'} (v) Any other: <span style="border-bottom:1px solid #000;display:inline-block;min-width:40px">${sC.enabled?cAT.other||'':''}</span></span>
+  </div>
+  <div class="bold small mt2">24. Result of the procedures/Tests carried out <span class="italic">(report in brief of the invasive tests/procedure carried out)</span> :</div>
+  <div class="proc-result">
+    ${sC.enabled && sC.resultBrief
+      ? `<div class="result-line">${sC.resultBrief}</div>`
+      : `<div class="result-line"></div><div class="result-line"></div>`
+    }
+  </div>
+  <div class="field-row mt2">
+    <span class="field-label">25. Date on which procedures carried out :</span>
+    <span class="field-val field-val-bold">${sC.enabled&&sC.procedureDate ? fmt(sC.procedureDate) : '___________'}</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">26. The result of pre-natal diagnostic procedure were conveyed to</span>
+    <span class="field-val field-val-bold">${sC.enabled?val(sC.conveyedTo):''}</span>
+    <span> on </span>
+    <span class="field-val field-val-bold" style="max-width:80px">${sC.enabled&&sC.conveyedDate?fmt(sC.conveyedDate):'___________'}</span>
+  </div>
+  <div class="field-row mt2">
+    <span class="field-label">27. Any indication for MTP as per the abnormality detected in the diagnostic procedures/tests :</span>
+  </div>
+  <div class="field-val" style="display:block;min-height:14px;border-bottom:1px solid #000;font-style:italic">${sC.enabled?sC.mtpIndication||'':''}</div>
+
+  <div class="sig-row mt4">
+    <div class="sig-box">
+      <div class="sig-date">Date : ${procedureDate}</div>
+      <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
+    </div>
+    <div class="sig-box" style="text-align:center">
+      <div class="sig-line">Name, Signature and Registration number<br>with seal of the Gynaecologist/Radiologist/<br>Registered Medical Practitioner performing<br>Diagnostic procedure/s</div>
+      <div style="border:1px solid #000;width:60px;height:40px;margin:4px auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end body-cols -->
+
+<!-- ══ SECTION D ══════════════════════════════════════════════════════ -->
+<div class="sec-head" style="margin-top:4px">Section D &nbsp; DECLARATION OF THE PERSON UNDERGOING PRENATAL DIAGNOSTIC TEST / PROCEDURE</div>
+
+<div class="declaration">
+  <div>I, Mrs./Mr. <span style="border-bottom:1px solid #000;display:inline-block;min-width:200px;font-weight:bold">${p.name || ''}</span> declare that by undergoing <span class="underline">ultrasonography</span> &nbsp; Prenatal Diagnostic test / Procedure. I do not want to know the sex of my foetus.</div>
+  <div class="sig-row" style="margin-top:8px">
+    <div class="sig-date">Date : ${declarationDate}</div>
+    <div style="text-align:center">
+      <div class="sig-line" style="width:180px">Signature / Thumb impression of the person<br>undergoing the prenatal Diagnostic Test/Procedure</div>
+    </div>
+  </div>
+</div>
+
+<!-- Gujarati declaration -->
+<div class="decl-gu">
+  <span class="bold">પ્રિનેટલ ડાયગ્નોસ્ટીક ટેસ્ટ / પ્રોસીઝર કરાવનાર વ્યક્તિનો કબુલાત પત્ર</span><br>
+  હું શ્રીમતિ <span style="border-bottom:1px solid #000;display:inline-block;min-width:160px;font-weight:bold">${p.name || ''}</span> આથી જાહેર કરૂં છું કે ગર્ભસ્થ બાળકની પ્રિનેટલ ડાયગ્નોસ્ટીક ટેસ્ટ / પ્રોસીઝર (સોનોગ્રાફી) તપાસ દરમ્યાન મારે મારા બાળક ની જાતિ (બાબો કે બેબી) જાણવી નથી.<br>
+  <div style="display:flex;justify-content:space-between;margin-top:4px">
+    <span>તારીખ : ${declarationDate}</span>
+    <span style="border-top:1px solid #000;display:inline-block;min-width:180px;text-align:center;padding-top:2px">દર્દીની સહી અથવા અંગૂઠાનું નિશાન</span>
+  </div>
+</div>
+
+${sD.thumbImpression ? `
+<div class="thumb-section">
+  <div class="bold">In case of Thumb Impression :</div>
+  <div class="field-row mt2">
+    <span class="field-label">Identified by (Name)</span>
+    <span class="field-val field-val-bold">${val(sD.witnessName)}</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">Age :</span>
+    <span class="field-val field-val-bold" style="max-width:50px">${sD.witnessAge||'___'}</span>
+    <span style="margin:0 6px">Sex</span>
+    <span class="field-val field-val-bold" style="max-width:50px">${sD.witnessSex||'___'}</span>
+    <span style="margin:0 6px">Relation (if any)</span>
+    <span class="field-val field-val-bold">${sD.witnessRelation||'___________'}</span>
+  </div>
+  <div class="field-row">
+    <span class="field-label">Add. &amp; Contact No.</span>
+    <span class="field-val field-val-bold">${sD.witnessContact||'___________'}</span>
+  </div>
+  <div style="text-align:right;margin-top:4px">
+    <div style="display:inline-block;border-top:1px solid #000;min-width:160px;text-align:center;padding-top:2px;font-size:8pt">
+      Signature of a person attesting thumb impression
+    </div>
+  </div>
+</div>` : ''}
+
+<!-- Radiologist declaration -->
+<div class="declaration" style="margin-top:4px">
+  <span class="bold">DECLARATION OF THE PERSON UNDERGOING PRENATAL DIAGNOSTIC TEST / PROCEDURE</span><br>
+  I, <span style="border-bottom:1px solid #000;display:inline-block;min-width:140px;font-weight:bold">${val(sB.performedBy || sA.doctorName)}</span>
+  (name of the person conducting ultrasonography image / scanning) declare that while conducting ultrasonography/image Scanning on Ms./Mr.
+  <span style="border-bottom:1px solid #000;display:inline-block;min-width:140px;font-weight:bold">${val(p.name)}</span>
+  (name of the pregnant woman or the person undergoing pre-natal diagnostic procedure/test), I have neither detected nor disclosed sex of her fetus to anybody in any manner.
+</div>
+
+<!-- Final signatures -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;border-top:1px solid #000;padding-top:6px">
+  <div>
+    <div class="sig-date">Date : ${procedureDate}</div>
+    <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
+    <div style="text-align:center;margin-top:4px">
+      <div style="border:1px solid #000;width:60px;height:35px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+      <div style="font-size:8pt;margin-top:2px;font-weight:bold">Radiologist</div>
+    </div>
+  </div>
+  <div>
+    <div class="sig-date">Date : ${procedureDate}</div>
+    <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
+    <div style="text-align:center;margin-top:4px">
+      <div style="border:1px solid #000;width:60px;height:35px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+      <div style="font-size:8pt;margin-top:2px;font-weight:bold">Radiologist</div>
+    </div>
+  </div>
+</div>
+
+<!-- Generated by note -->
+<div style="border-top:1px dashed #ccc;margin-top:6px;padding-top:4px;font-size:7.5pt;color:#555;display:flex;justify-content:space-between">
+  <span>MediRecord Smart EMR — Form F (PNDT) — ${form.formNumber || ''}</span>
+  <span>Generated: ${new Date().toLocaleString('en-IN')}</span>
+</div>
+
+</div><!-- end page -->
+</body>
+</html>`
+}
+
+// ── Main Component ─────────────────────────────────────────────────────
 export default function FFormView({ form, onClose }) {
   const { user } = useAuth()
-  const printRef = useRef(null)
-
-  const buildHtml = (bodyContent) => `<!DOCTYPE html><html><head><title>F-Form ${form.formNumber}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;font-size:12.5px;color:#0f172a;padding:32px;max-width:800px;margin:0 auto}
-    .pdf-header{display:flex;justify-content:space-between;border-bottom:2px solid #0EA5A0;padding-bottom:14px;margin-bottom:18px}
-    .pdf-logo{font-size:20px;font-weight:800;color:#0EA5A0}
-    .pdf-logo span{color:#0f172a}
-    .pdf-patient{background:#f0f4f8;border-radius:8px;padding:12px 16px;margin-bottom:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .pdf-patient-item label{font-size:9px;text-transform:uppercase;color:#94a3b8;display:block;margin-bottom:2px;font-weight:700}
-    .pdf-patient-item span{font-size:13px;font-weight:700}
-    .pdf-sec-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#0C8F8A;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0}
-    .pdf-section{margin-bottom:16px}
-    .pdf-field{margin-bottom:8px}
-    .pdf-field label{font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;display:block;margin-bottom:2px}
-    .pdf-field p{font-size:12.5px;line-height:1.5;white-space:pre-line}
-    .pdf-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .pdf-vitals{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-    .pdf-vital{background:#f8fafc;border-radius:6px;padding:8px;text-align:center;border:1px solid #e2e8f0}
-    .pdf-vital label{font-size:9px;color:#94a3b8;display:block;margin-bottom:3px;font-weight:700}
-    .pdf-vital span{font-size:13px;font-weight:700}
-    .pdf-icd{display:inline-block;background:#e6f7f7;color:#0C8F8A;padding:3px 12px;border-radius:100px;font-size:12px;font-weight:800;margin-bottom:10px}
-    .pdf-footer{border-top:1px solid #e2e8f0;padding-top:14px;margin-top:22px;display:flex;justify-content:space-between;align-items:flex-end}
-    .sig-line{border-top:1px solid #0f172a;width:150px;margin-top:36px;padding-top:5px;font-size:10px;color:#64748b}
-    @media print{body{padding:20px}}
-  </style></head><body>${bodyContent}</body></html>`
-
-  const pdfBody = () => printRef.current?.innerHTML || ''
+  const clinic = form.clinic || {}
 
   const handlePrint = () => {
-    const w = window.open('', '_blank')
-    w.document.write(buildHtml(pdfBody()))
-    w.document.close(); w.focus()
-    setTimeout(() => { w.print(); w.close() }, 400)
+    const html = buildFormFHtml(form, clinic, user)
+    const w = window.open('', '_blank', 'width=920,height=800')
+    if (!w) { alert('Please allow pop-ups to print the form'); return }
+    w.document.write(html)
+    w.document.close()
+    w.focus()
+    setTimeout(() => w.print(), 600)
   }
 
-  const handleDownload = () => {
-    // Open print window → browser Save as PDF
-    const w = window.open('', '_blank', 'width=900,height=700')
-    w.document.write(buildHtml(pdfBody()))
-    w.document.close(); w.focus()
-    setTimeout(() => { w.print() }, 600)
+  const handleSavePdf = () => {
+    const html = buildFormFHtml(form, clinic, user)
+    const w = window.open('', '_blank', 'width=920,height=800')
+    if (!w) { alert('Please allow pop-ups to save PDF'); return }
+    w.document.write(html)
+    w.document.close()
+    w.focus()
+    setTimeout(() => w.print(), 600)
   }
 
   const handleShare = async () => {
-    const text = `MediRecord F-Form\nForm: ${form.formNumber}\nPatient: ${form.patient?.name}\nDate: ${new Date(form.createdAt).toLocaleDateString('en-IN')}\nDiagnosis: ${form.provisionalDiagnosis || 'N/A'}`
-    if (navigator.share) { navigator.share({ title: `F-Form ${form.formNumber}`, text }) }
-    else { await navigator.clipboard.writeText(text); alert('Summary copied to clipboard!') }
+    const text = `MediRecord Form F\nForm: ${form.formNumber}\nPatient: ${form.patient?.name}\nDate: ${new Date(form.createdAt).toLocaleDateString('en-IN')}\nDoctor: ${form.sectionA?.doctorName || form.createdBy?.name || '—'}`
+    if (navigator.share) { navigator.share({ title: `Form F ${form.formNumber}`, text }) }
+    else { await navigator.clipboard.writeText(text); alert('Form details copied to clipboard!') }
   }
 
-  const val = v => v || '—'
-  const hasVitals = form.vitals && Object.values(form.vitals).some(Boolean)
+  const p = form.patient || {}
+  const sB = form.sectionB || {}
+  const sC = form.sectionC || {}
 
   return (
     <div className="fform-view-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="fform-view-modal">
         <div className="fform-view-toolbar">
-          <h3>F-Form — {form.formNumber}</h3>
+          <div>
+            <h3>Form F — {form.formNumber}</h3>
+            <div style={{fontSize:11,color:'var(--text-3)',marginTop:1}}>
+              {p.name} · {new Date(form.createdAt).toLocaleDateString('en-IN')}
+              {form.sectionB?.indications && Object.values(form.sectionB.indications).some(Boolean) ? ' · Section B ✓' : ''}
+              {sC.enabled ? ' · Section C ✓' : ''}
+            </div>
+          </div>
           <div className="fform-view-actions">
             <button className="btn btn--secondary btn--sm" onClick={handleShare}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Share
             </button>
-            <button className="btn btn--secondary btn--sm" onClick={handleDownload}>
+            <button className="btn btn--secondary btn--sm" onClick={handleSavePdf}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Download
+              Save PDF
             </button>
             <button className="btn btn--primary btn--sm" onClick={handlePrint}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -80,105 +540,77 @@ export default function FFormView({ form, onClose }) {
           </div>
         </div>
 
+        {/* Preview */}
         <div className="fform-view-body">
-          <div className="pdf-wrapper" ref={printRef}>
-            {/* Header */}
-            <div className="pdf-header">
-              <div>
-                {(form.clinic?.logoUrl || form.clinic?.logo) && (
-                  <img src={form.clinic.logoUrl || form.clinic.logo} alt="" style={{height:34,objectFit:'contain',display:'block',marginBottom:4}} />
-                )}
-                <div className="pdf-logo">{form.clinic?.name || user?.clinic?.name || 'MediRecord'}</div>
-                <div className="pdf-sub">Clinical Findings Form (F-Form)</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 800, fontSize: 16 }}>{form.formNumber}</div>
-                <div className="pdf-sub">{form.clinic?.name || user?.clinic?.name || 'MediRecord Clinic'}</div>
-                <div className="pdf-sub">{new Date(form.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-              </div>
+          <div className="fform-preview-notice">
+            <span>📄 </span>
+            <span>This is the official Form F (PC &amp; PNDT Act). Click <strong>Print</strong> or <strong>Save PDF</strong> for the formatted government document with all sections.</span>
+          </div>
+
+          {/* Summary preview (not the full form — that's in the print window) */}
+          <div className="fform-preview-summary">
+            <div className="fform-ps__header">
+              {(clinic.logoUrl || clinic.logo) && <img src={clinic.logoUrl || clinic.logo} alt="" style={{height:28,objectFit:'contain'}} />}
+              <div className="fform-ps__title">{clinic.name || user?.clinic?.name}</div>
+              <div style={{marginLeft:'auto',fontFamily:'var(--font-num)',fontSize:18,fontWeight:900,color:'var(--teal)'}}>{form.formNumber}</div>
             </div>
 
-            {/* Patient info bar */}
-            <div className="pdf-patient">
+            <div className="fform-ps__grid">
               {[
-                ['Patient Name', form.patient?.name],
-                ['Age / Gender', `${form.patient?.age} yrs / ${form.patient?.gender}`],
-                ['Phone', form.patient?.phone],
-                ['Doctor', form.createdBy?.name || '—'],
-              ].map(([l, v]) => (
-                <div key={l} className="pdf-patient-item">
-                  <label>{l}</label><span>{v || '—'}</span>
+                ['Patient', p.name],
+                ['Age/Gender', `${p.age} ${p.ageUnit||'yrs'} / ${p.gender}`],
+                [p.relationType||"Husband's Name", p.relativeName || p.husbandName || '—'],
+                ['Phone', p.phone],
+                ['LMP', p.lmp ? new Date(p.lmp).toLocaleDateString('en-IN') : '—'],
+                ['Weeks', p.weeksOfPregnancy ? `${p.weeksOfPregnancy}w ${p.daysOfPregnancy||0}d` : '—'],
+                ['Referred By', p.referredDoctor?.name || p.referredBy || 'Self'],
+                ['Procedure Date', sB.performedBy ? (form.sectionA?.procedureDate ? new Date(form.sectionA.procedureDate).toLocaleDateString('en-IN') : '—') : '—'],
+                ['Performing Doctor', sB.performedBy || form.sectionA?.doctorName || '—'],
+                ['PNDT Reg. No.', clinic.pndtRegNo || user?.clinic?.pndtRegNo || '—'],
+              ].map(([l,v]) => (
+                <div key={l} className="fform-ps__item">
+                  <div className="fform-ps__label">{l}</div>
+                  <div className="fform-ps__value">{v || '—'}</div>
                 </div>
               ))}
             </div>
 
-            {/* Chief Complaint */}
-            <div className="pdf-section">
-              <div className="pdf-sec-title">Chief Complaint</div>
-              <div className="pdf-field"><p>{val(form.chiefComplaint)}</p></div>
-            </div>
-
-            {/* History */}
-            {(form.historyOfPresentIllness || form.pastMedicalHistory || form.familyHistory || form.allergies || form.currentMedications) && (
-              <div className="pdf-section">
-                <div className="pdf-sec-title">History</div>
-                <div className="pdf-g2">
-                  {form.historyOfPresentIllness && <div className="pdf-field"><label>History of Present Illness</label><p>{form.historyOfPresentIllness}</p></div>}
-                  {form.pastMedicalHistory && <div className="pdf-field"><label>Past Medical History</label><p>{form.pastMedicalHistory}</p></div>}
-                  {form.familyHistory && <div className="pdf-field"><label>Family History</label><p>{form.familyHistory}</p></div>}
-                  {form.allergies && <div className="pdf-field"><label>Allergies</label><p>{form.allergies}</p></div>}
-                  {form.currentMedications && <div className="pdf-field"><label>Current Medications</label><p>{form.currentMedications}</p></div>}
+            {/* Checked indications summary */}
+            {sB.indications && Object.values(sB.indications).some(v=>v===true) && (
+              <div className="fform-ps__inds">
+                <div className="fform-ps__ind-title">Section B — USG Indications Ticked:</div>
+                <div className="fform-ps__ind-list">
+                  {Object.entries(sB.indications).filter(([,v])=>v===true).map(([k]) => {
+                    const entry = [
+                      ['i_viability','Viability'],['ii_dating','Dating'],['iii_fetuses','Fetuses/Chorionicity'],
+                      ['iv_iucd_mtp','IUCD/MTP'],['v_bleeding','Bleeding/Leaking'],['vi_abortion','Abortion F/U'],
+                      ['vii_cervical','Cervical'],['viii_discrepancy','Size Discrepancy'],['ix_adnexal','Adnexal'],
+                      ['x_chromosomal','Chromosomal/Structural'],['xi_presentation','Presentation'],['xii_liquor','Liquor Amnii'],
+                      ['xiii_preterm','Preterm Labor'],['xiv_placenta','Placenta'],['xv_umbilical','Umbilical Cord'],
+                      ['xvi_caesarean','Caesarean Scar'],['xvii_growth','Growth/Weight'],['xviii_doppler','Doppler'],
+                      ['xix_guided','Guided Procedures'],['xx_invasive','Invasive Adjunct'],['xxi_intrapartum','Intrapartum'],
+                      ['xxii_medical_surgical','Medical/Surgical'],['xxiii_research','Research'],
+                    ].find(([key]) => key===k)
+                    return entry ? <span key={k} className="fform-ps__ind-badge">{entry[1]}</span> : null
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Vitals */}
-            {hasVitals && (
-              <div className="pdf-section">
-                <div className="pdf-sec-title">Vital Signs</div>
-                <div className="pdf-vitals">
-                  {[['bp','BP'],['pulse','Pulse'],['temp','Temp'],['weight','Weight'],['height','Height'],['spo2','SpO₂']].map(([k,l]) => (
-                    <div key={k} className="pdf-vital">
-                      <label>{l}</label><span>{form.vitals[k] || '—'}</span>
-                    </div>
-                  ))}
-                </div>
+            {/* Result brief */}
+            {sB.resultBrief && (
+              <div className="fform-ps__result">
+                <div className="fform-ps__result-label">Section B Result:</div>
+                <div className="fform-ps__result-text">{sB.resultBrief}</div>
               </div>
             )}
 
-            {/* Examination */}
-            {(form.physicalExamination || form.investigations) && (
-              <div className="pdf-section">
-                <div className="pdf-sec-title">Examination & Investigations</div>
-                {form.physicalExamination && <div className="pdf-field"><label>Physical Examination</label><p>{form.physicalExamination}</p></div>}
-                {form.investigations && <div className="pdf-field"><label>Investigations</label><p>{form.investigations}</p></div>}
+            {sC.enabled && (
+              <div className="fform-ps__invasive">
+                <span>⚠ Section C (Invasive) completed</span>
+                {sC.resultBrief && <span className="fform-ps__result-text"> — {sC.resultBrief}</span>}
               </div>
             )}
-
-            {/* Diagnosis & Treatment */}
-            <div className="pdf-section">
-              <div className="pdf-sec-title">Diagnosis & Treatment</div>
-              {form.icdCode && <div className="pdf-icd">ICD-10: {form.icdCode}</div>}
-              <div className="pdf-g2">
-                {form.provisionalDiagnosis && <div className="pdf-field"><label>Provisional Diagnosis</label><p>{form.provisionalDiagnosis}</p></div>}
-                {form.differentialDiagnosis && <div className="pdf-field"><label>Differential Diagnosis</label><p>{form.differentialDiagnosis}</p></div>}
-              </div>
-              {form.treatmentPlan && <div className="pdf-field"><label>Treatment Plan</label><p>{form.treatmentPlan}</p></div>}
-              {form.prescriptions && <div className="pdf-field"><label>Prescriptions</label><p>{form.prescriptions}</p></div>}
-              <div className="pdf-g2">
-                {form.followUpDate && <div className="pdf-field"><label>Follow-up Date</label><p>{new Date(form.followUpDate).toLocaleDateString('en-IN')}</p></div>}
-                {form.doctorNotes && <div className="pdf-field"><label>Doctor's Notes</label><p>{form.doctorNotes}</p></div>}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="pdf-footer">
-              <div><div className="sig-line">Doctor / Radiologist Signature & Seal</div></div>
-              <div style={{ textAlign: 'right', fontSize: 10.5, color: '#94a3b8' }}>
-                <div>MediRecord Smart EMR</div>
-                <div>Generated: {new Date().toLocaleString('en-IN')}</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

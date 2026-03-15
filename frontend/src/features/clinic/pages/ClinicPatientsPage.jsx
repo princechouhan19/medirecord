@@ -1,8 +1,11 @@
+import { printPatientRecordById } from '../../reception/components/PatientRecordSheet'
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import api from '../../../services/api'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 export default function ClinicPatientsPage() {
+  const { user } = useAuth()
   const [patients, setPatients] = useState([])
   const [search, setSearch]     = useState('')
   const [dateFilter, setDateFilter] = useState('')
@@ -46,11 +49,19 @@ export default function ClinicPatientsPage() {
             {patients.map((p,i)=>(
               <tr key={p._id}>
                 <td className="td-mono">#{String(p.tokenNo||i+1).padStart(3,'0')}</td>
-                <td><div className="td-name">{p.name}</div><div className="td-muted">{p.age}y · {p.gender}{p.husbandName?` · H: ${p.husbandName}`:''}</div></td>
+                <td>
+                  <div className="td-name">{p.name}</div>
+                  <div className="td-muted">
+                    {p.age}y · {p.gender}
+                    {p.relativeName ? ` · ${p.relationType||'H/O'}: ${p.relativeName}` :
+                     p.husbandName  ? ` · H/O: ${p.husbandName}` : ''}
+                  </div>
+                  {p.fformRequired && <span className="badge badge--teal" style={{fontSize:9,marginTop:3}}>📋 F-Form</span>}
+                </td>
                 <td className="td-muted">{p.phone}</td>
                 <td><div style={{fontSize:'12.5px',fontWeight:600}}>{p.testName}</div><div className="td-muted">{p.testCategory}</div></td>
                 <td><div style={{fontFamily:'var(--font-num)',fontWeight:700}}>₹{p.fee}</div><span className={`badge badge--${p.isPaid?'green':'amber'}`} style={{fontSize:'10px'}}>{p.isPaid?'Paid':'Pending'}</span></td>
-                <td className="td-muted">{p.referredBy||'Self'}</td>
+                <td className="td-muted">{p.referredDoctor?.name || p.referredBy || 'Self'}</td>
                 <td><span className={`badge badge--${p.status==='waiting'?'amber':p.status==='in_progress'?'blue':p.status==='completed'?'green':'gray'}`}>{p.status.replace('_',' ')}</span></td>
                 <td className="td-muted">{new Date(p.visitDate).toLocaleDateString('en-IN')}</td>
                 <td className="td-muted">{p.registeredBy?.name?.split(' ')[0]||'—'}</td>

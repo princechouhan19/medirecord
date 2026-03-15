@@ -87,17 +87,27 @@ export default function PndtRegisterPage() {
                     <td className="pndt-td--nowrap">{new Date(p.visitDate).toLocaleDateString('en-IN')}</td>
                     <td>
                       <strong>{p.name}</strong>
-                      <div style={{fontSize:'11px',color:'var(--text-2)'}}>{p.age} yrs{p.husbandName?` · H/O: ${p.husbandName}`:''}</div>
+                      <div style={{fontSize:'11px',color:'var(--text-2)'}}>
+                        {p.age} yrs
+                        {p.relativeName ? ` · ${p.relationType||'H/O'}: ${p.relativeName}` : p.husbandName ? ` · H/O: ${p.husbandName}` : ''}
+                      </div>
                     </td>
                     <td style={{fontSize:'12px'}}>{p.address||'—'}</td>
-                    <td style={{fontSize:'12px'}}>{p.referredBy||'Self'}</td>
-                    <td className="pndt-td--center">—</td>
-                    <td className="pndt-td--center">{p.lmp?new Date(p.lmp).toLocaleDateString('en-IN'):'—'}</td>
+                    <td style={{fontSize:'12px'}}>{p.referredDoctor?.name || p.referredBy || 'Self'}</td>
+                    <td className="pndt-td--center" style={{fontSize:'11px'}}>
+                      ♂{p.livingChildrenMale||0} / ♀{p.livingChildrenFemale||0}
+                    </td>
+                    <td className="pndt-td--center" style={{fontSize:'11px'}}>
+                      {p.lmp ? new Date(p.lmp).toLocaleDateString('en-IN') : '—'}
+                      {p.weeksOfPregnancy ? <><br/><span style={{color:'var(--teal)',fontWeight:700}}>{p.weeksOfPregnancy}w{p.daysOfPregnancy?` ${p.daysOfPregnancy}d`:''}</span></> : ''}
+                    </td>
                     <td className="pndt-td--center">
                       <span className="pndt-tick">✓</span>
                     </td>
                     <td className="pndt-td--center">—</td>
-                    <td className="pndt-td--center">{new Date(p.visitDate).toLocaleDateString('en-IN')}</td>
+                    <td className="pndt-td--center" style={{fontSize:'11px'}}>
+                      {p.patientRegDate ? new Date(p.patientRegDate).toLocaleDateString('en-IN') : new Date(p.visitDate).toLocaleDateString('en-IN')}
+                    </td>
                     <td style={{fontSize:'12px',color:'var(--green)'}}>
                       {p.notes||p.testName||'Normal'}
                     </td>

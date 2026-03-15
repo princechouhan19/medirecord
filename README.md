@@ -333,6 +333,15 @@ cd backend && npm run dev    # :5000
 cd frontend && npm run dev   # :5173
 ```
 
+### 4. First-time setup
+```bash
+POST /api/auth/setup-superadmin
+{ "name": "Prince", "email": "admin@clinic.in", "password": "securepass" }
+```
+Then: Login → `/admin/clinics` → Register Clinic → Owner logs in → Add test fees → Add staff → Register first patient.
+
+---
+
 ## Deployment (Render)
 
 | Setting | Value |

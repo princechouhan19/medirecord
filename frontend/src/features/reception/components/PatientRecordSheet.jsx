@@ -21,7 +21,7 @@ export function buildPatientRecordHtml(patient, clinic) {
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#0f172a;background:#fff}
-  .page{width:210mm;min-height:297mm;padding:8mm 9mm;display:flex;flex-direction:column;gap:6px;page-break-after:always}
+  .page{width:210mm;height:297mm;max-height:297mm;padding:8mm 9mm;display:flex;flex-direction:column;gap:6px;page-break-after:always;overflow:hidden}
   .page:last-child{page-break-after:auto}
 
   /* ── Compact clinic header ── */
@@ -37,6 +37,7 @@ export function buildPatientRecordHtml(patient, clinic) {
 
   /* ── Section ── */
   .sec{border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;flex-shrink:0}
+  .sec.slip-sec{flex:1;flex-shrink:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
   .sec-h{background:#0EA5A0;color:#fff;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px}
   .sec-h-dark{background:#1e293b}
 
@@ -64,9 +65,10 @@ export function buildPatientRecordHtml(patient, clinic) {
   .img-label{font-size:7px;font-weight:700;text-transform:uppercase;color:#64748b;padding:2px 5px;background:#f1f5f9;text-align:center;border-top:1px solid #e2e8f0}
   .img-empty{flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:9px;padding:10px;text-align:center}
 
-  /* ── Referral slip — fills 90% of section ── */
-  .slip-wrap{flex:1;display:flex;align-items:stretch;justify-content:center;padding:4px;min-height:100px}
-  .slip-img{width:100%;height:100%;object-fit:contain;object-position:top;border:1px solid #e2e8f0;border-radius:4px;min-height:90px}
+  /* ── Referral slip — fills section, HARD boundaries ── */
+  .slip-sec{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .slip-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:4px;overflow:hidden;min-height:0}
+  .slip-img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;object-position:top center;border:1px solid #e2e8f0;border-radius:4px}
   .slip-empty{display:flex;align-items:center;justify-content:center;flex:1;color:#94a3b8;font-size:9px;padding:20px;text-align:center;font-style:italic}
 
   /* ── Report page ── */
@@ -85,7 +87,7 @@ export function buildPatientRecordHtml(patient, clinic) {
 
   @media print{
     body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .page{padding:7mm 8mm;width:100%}
+    .page{padding:7mm 8mm;width:100%;height:297mm;max-height:297mm;overflow:hidden}
     @page{size:A4;margin:0}
   }
 </style>
@@ -184,11 +186,11 @@ export function buildPatientRecordHtml(patient, clinic) {
   </div>
 
   <!-- Referral Slip -->
-  <div class="sec" style="flex:1;display:flex;flex-direction:column">
+  <div class="sec slip-sec">
     <div class="sec-h sec-h-dark">Referral Slip (Scan)</div>
     ${p.referralSlip
-      ? `<div class="slip-wrap" style="flex:1"><img src="${p.referralSlip}" class="slip-img" alt="Referral Slip"></div>`
-      : `<div class="slip-empty" style="flex:1">Referral slip not uploaded — attach physical copy here</div>`
+      ? `<div class="slip-wrap"><img src="${p.referralSlip}" class="slip-img" alt="Referral Slip"></div>`
+      : `<div class="slip-empty">Referral slip not uploaded — attach physical copy here</div>`
     }
   </div>
 

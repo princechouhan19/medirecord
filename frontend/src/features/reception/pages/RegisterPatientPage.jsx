@@ -40,7 +40,7 @@ const EMPTY = {
 }
 
 // ── File upload helper ─────────────────────────────────────────────────
-function FileUpload({ label, hint, value, onUpload, folder, accept='image/*' }) {
+function FileUpload({ label, hint, value, onUpload, folder, accept='image/*', patientName='' }) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef(null)
 
@@ -51,6 +51,8 @@ function FileUpload({ label, hint, value, onUpload, folder, accept='image/*' }) 
       const data = new FormData()
       data.append('file', file)
       data.append('folder', `/medirecord/${folder||'docs'}`)
+      if (patientName) data.append('patientName', patientName)
+      if (label)       data.append('label', label.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_-]/g,''))
       const r = await api.post('/upload', data, { headers:{ 'Content-Type':'multipart/form-data' } })
       onUpload(r.data.url, r.data.fileId)
     } catch(e) { alert('Upload failed: ' + (e.response?.data?.error || e.message)) }
@@ -392,6 +394,7 @@ export default function RegisterPatientPage() {
                 value={form.idProofFront}
                 folder="id-proof"
                 accept="image/*,application/pdf"
+                patientName={form.name}
                 onUpload={(url, fid) => setForm(f => ({...f, idProofFront:url, idProofFrontId:fid}))}
               />
               <FileUpload
@@ -400,6 +403,7 @@ export default function RegisterPatientPage() {
                 value={form.idProofBack}
                 folder="id-proof"
                 accept="image/*,application/pdf"
+                patientName={form.name}
                 onUpload={(url, fid) => setForm(f => ({...f, idProofBack:url, idProofBackId:fid}))}
               />
             </div>
@@ -478,6 +482,7 @@ export default function RegisterPatientPage() {
                 value={form.referralSlip}
                 folder="referral-slips"
                 accept="image/*,application/pdf"
+                patientName={form.name}
                 onUpload={(url,fid) => setForm(f => ({...f, referralSlip:url, referralSlipId:fid}))}
               />
             </div>
@@ -575,7 +580,7 @@ export default function RegisterPatientPage() {
               <div className="form-group">
                 <label>Payment Mode</label>
                 <select {...inp('paymentMode')}>
-                  {PAY_MODES.map(m => <option key={m}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>)}
+                  {PAY_MODES.map(m => <option key={m} value={m}>{m.charAt(0).toUpperCase()+m.slice(1)}</option>)}
                 </select>
               </div>
             </div>

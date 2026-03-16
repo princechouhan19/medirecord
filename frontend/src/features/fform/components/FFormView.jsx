@@ -69,80 +69,78 @@ function buildFormFHtml(form, clinic, user) {
 <meta charset="UTF-8">
 <title>Form F — ${form.formNumber || 'PNDT Form'}</title>
 <style>
-  /* ── Reset ── */
+  /* ── Reset — One-page Form F ── */
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Times New Roman',Times,serif;font-size:9pt;color:#000;background:#fff}
-
-  /* ── Page ── */
-  .page{width:210mm;min-height:297mm;padding:8mm 10mm;display:block}
+  body{font-family:'Times New Roman',Times,serif;font-size:7.5pt;color:#000;background:#fff}
+  .page{width:210mm;min-height:297mm;padding:4mm 7mm;display:block}
 
   /* ── Header ── */
-  .form-header{border:2px solid #000;padding:4px 8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start}
+  .form-header{border:1.5px solid #000;padding:2px 5px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
   .form-title-block{flex:1}
-  .form-title-main{font-size:8pt;font-weight:bold;text-transform:uppercase;line-height:1.4}
-  .form-title-sub{font-size:7.5pt;font-style:italic;line-height:1.3}
-  .clinic-block{border-left:1px solid #000;padding-left:10px;min-width:180px;text-align:right}
-  .clinic-name{font-size:9pt;font-weight:bold}
-  .clinic-addr{font-size:7.5pt;margin-top:2px}
-  .clinic-reg{font-size:8pt;font-weight:bold;margin-top:3px}
-  .clinic-logo{max-height:32px;object-fit:contain;display:block;margin-bottom:3px;margin-left:auto}
+  .form-title-main{font-size:7.5pt;font-weight:bold;text-transform:uppercase;line-height:1.3}
+  .form-title-sub{font-size:7pt;font-style:italic;line-height:1.2}
+  .clinic-block{border-left:1px solid #000;padding-left:8px;min-width:160px;text-align:right;flex-shrink:0}
+  .clinic-name{font-size:8.5pt;font-weight:bold;line-height:1.2}
+  .clinic-addr{font-size:7pt;margin-top:1px;line-height:1.3}
+  .clinic-reg{font-size:7.5pt;font-weight:bold;margin-top:2px}
+  .clinic-logo{max-height:26px;object-fit:contain;display:block;margin-bottom:2px;margin-left:auto}
 
   /* ── Section headings ── */
-  .sec-head{background:#000;color:#fff;font-size:8pt;font-weight:bold;padding:2px 6px;margin:5px 0 3px;text-transform:uppercase;letter-spacing:.03em}
-  .sec-head-sm{background:#333;color:#fff;font-size:7.5pt;font-weight:bold;padding:2px 6px;margin:3px 0 2px}
+  .sec-head{background:#000;color:#fff;font-size:6.8pt;font-weight:bold;padding:1px 4px;margin:2px 0 1px;text-transform:uppercase;letter-spacing:.03em}
+  .sec-head-sm{background:#333;color:#fff;font-size:6.8pt;font-weight:bold;padding:1px 4px;margin:1px 0 1px}
 
   /* ── Field rows ── */
-  .field-row{display:flex;align-items:baseline;margin-bottom:3px;font-size:8.5pt;line-height:1.4}
-  .field-label{font-weight:normal;white-space:nowrap;margin-right:4px;flex-shrink:0}
-  .field-val{border-bottom:1px solid #000;flex:1;min-height:11px;padding:0 3px;font-size:8.5pt;font-style:italic}
+  .field-row{display:flex;align-items:baseline;margin-bottom:1px;font-size:7.5pt;line-height:1.25}
+  .field-label{font-weight:normal;white-space:nowrap;margin-right:3px;flex-shrink:0}
+  .field-val{border-bottom:1px solid #000;flex:1;min-height:8px;padding:0 2px;font-size:7.5pt;font-style:italic}
   .field-val-bold{font-weight:bold;font-style:normal}
 
   /* ── Two-column body ── */
   .body-cols{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1.5px solid #000}
-  .col-left{padding-right:8px;border-right:1.5px solid #000}
-  .col-right{padding-left:8px}
+  .col-left{padding-right:6px;border-right:1.5px solid #000}
+  .col-right{padding-left:6px}
 
-  /* ── Indication checkboxes ── */
-  .ind-list{list-style:none;padding:0;margin:2px 0}
-  .ind-item{display:flex;gap:4px;margin-bottom:1.5px;font-size:7.5pt;line-height:1.3;align-items:flex-start}
-  .ind-num{flex-shrink:0;width:22px;font-weight:bold}
-  .ind-chk{flex-shrink:0;width:11px;font-size:9pt}
-  .ind-txt{flex:1}
+  /* ── Indication checkboxes — 2 column grid for space saving ── */
+  .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:1px 0}
+  .ind-item{display:flex;gap:2px;margin-bottom:0.5px;font-size:6.5pt;line-height:1.2;align-items:flex-start;padding-right:2px}
+  .ind-num{flex-shrink:0;width:16px;font-weight:bold;font-size:6.5pt}
+  .ind-chk{flex-shrink:0;width:10px;font-size:8pt;line-height:1}
+  .ind-txt{flex:1;font-size:6.5pt;line-height:1.15}
 
   /* ── Checkboxes in a row ── */
-  .chk-row{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0;font-size:8pt}
-  .chk-item{display:flex;align-items:center;gap:3px}
+  .chk-row{display:flex;flex-wrap:wrap;gap:1px 8px;margin:1px 0;font-size:6.8pt}
+  .chk-item{display:flex;align-items:center;gap:2px;white-space:nowrap}
 
   /* ── Declaration box ── */
-  .declaration{border:1px solid #000;padding:5px 7px;margin:4px 0;font-size:8pt;line-height:1.5}
-  .decl-gu{font-size:8.5pt;line-height:1.6;margin-top:4px;border-top:1px dashed #666;padding-top:3px}
+  .declaration{border:1px solid #000;padding:1px 4px;margin:1px 0;font-size:7pt;line-height:1.3}
+  .decl-gu{font-size:7pt;line-height:1.3;margin-top:2px;border-top:1px dashed #666;padding-top:1px}
 
   /* ── Signature area ── */
-  .sig-row{display:flex;justify-content:space-between;margin-top:6px;gap:10px}
+  .sig-row{display:flex;justify-content:space-between;margin-top:2px;gap:6px}
   .sig-box{flex:1}
-  .sig-line{border-top:1px solid #000;margin-top:20px;padding-top:3px;font-size:8pt;text-align:center}
-  .sig-date{font-size:8pt;margin-bottom:3px}
+  .sig-line{border-top:1px solid #000;margin-top:8px;padding-top:2px;font-size:6.5pt;text-align:center;line-height:1.2}
+  .sig-date{font-size:6.5pt;margin-bottom:0px}
 
   /* ── Thumb impression section ── */
-  .thumb-section{border:1px solid #555;padding:4px 6px;font-size:8pt;margin-top:4px}
+  .thumb-section{border:1px solid #555;padding:1px 4px;font-size:6.8pt;margin-top:1px}
 
-  /* ── Section B right ── */
-  .proc-result{margin-top:4px}
-  .result-line{border-bottom:1px solid #000;min-height:10px;margin:2px 0;font-size:8pt;padding:0 3px;font-style:italic}
+  /* ── Results ── */
+  .proc-result{margin-top:2px}
+  .result-line{border-bottom:1px solid #000;min-height:7px;margin:1px 0;font-size:7pt;padding:0 2px;font-style:italic}
 
   /* ── Util ── */
   .bold{font-weight:bold}
   .italic{font-style:italic}
   .underline{text-decoration:underline}
-  .indent{margin-left:12px}
-  .mt2{margin-top:2px}
-  .mt4{margin-top:4px}
-  .small{font-size:7.5pt}
-  .form-no{font-size:8pt;font-weight:bold;float:right;margin-top:-2px}
+  .indent{margin-left:10px}
+  .mt2{margin-top:1px}
+  .mt4{margin-top:2px}
+  .small{font-size:7pt}
+  .form-no{font-size:7.5pt;font-weight:bold;float:right;margin-top:-1px}
 
   @media print{
     body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .page{padding:7mm 9mm;width:100%}
+    .page{padding:3mm 6mm;width:100%}
     @page{size:A4;margin:0}
   }
 </style>
@@ -233,19 +231,19 @@ function buildFormFHtml(form, clinic, user) {
   <div class="mt2 bold small">10. Indication/s for diagnosis procedure :</div>
   <div class="small italic indent" style="margin-bottom:2px">(Put a "Tick" against the appropriate indication/s)</div>
 
-  <ul class="ind-list">
+  <div class="ind-grid">
     ${USG_IND.map(([key, num, label]) => `
-    <li class="ind-item">
+    <div class="ind-item">
       <span class="ind-num">${num}</span>
       <span class="ind-chk">${ind[key] ? '☑' : '☐'}</span>
       <span class="ind-txt">${label}</span>
-    </li>`).join('')}
-    <li class="ind-item">
+    </div>`).join('')}
+    <div class="ind-item" style="grid-column:1/-1">
       <span class="ind-num"></span>
       <span class="ind-chk"></span>
       <span class="ind-txt">Any other (specify): <span style="border-bottom:1px solid #000;display:inline-block;min-width:80px;font-style:italic">${ind.other || ''}</span></span>
-    </li>
-  </ul>
+    </div>
+  </div>
 
   <div class="field-row mt2">
     <span class="field-label bold">11. Procedures carried out (Non-Invasive) — <span class="small italic">(Put a "Tick")</span></span>
@@ -373,14 +371,14 @@ function buildFormFHtml(form, clinic, user) {
   </div>
   <div class="field-val" style="display:block;min-height:14px;border-bottom:1px solid #000;font-style:italic">${sC.enabled?sC.mtpIndication||'':''}</div>
 
-  <div class="sig-row mt4">
+  <div class="sig-row mt2">
     <div class="sig-box">
       <div class="sig-date">Date : ${procedureDate}</div>
       <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
     </div>
     <div class="sig-box" style="text-align:center">
       <div class="sig-line">Name, Signature and Registration number<br>with seal of the Gynaecologist/Radiologist/<br>Registered Medical Practitioner performing<br>Diagnostic procedure/s</div>
-      <div style="border:1px solid #000;width:60px;height:40px;margin:4px auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+      <div style="border:1px solid #000;width:60px;height:24px;margin:2px auto;display:flex;align-items:center;justify-content:center;font-size:6.5pt">SEAL</div>
     </div>
   </div>
 </div>
@@ -388,30 +386,30 @@ function buildFormFHtml(form, clinic, user) {
 </div><!-- end body-cols -->
 
 <!-- ══ SECTION D ══════════════════════════════════════════════════════ -->
-<div class="sec-head" style="margin-top:4px">Section D &nbsp; DECLARATION OF THE PERSON UNDERGOING PRENATAL DIAGNOSTIC TEST / PROCEDURE</div>
+<div class="sec-head" style="margin-top:1px">Section D &nbsp; DECLARATION OF THE PERSON UNDERGOING PRENATAL DIAGNOSTIC TEST / PROCEDURE</div>
 
-<div class="declaration">
+<div class="declaration" style="padding:2px 4px">
   <div>I, Mrs./Mr. <span style="border-bottom:1px solid #000;display:inline-block;min-width:200px;font-weight:bold">${p.name || ''}</span> declare that by undergoing <span class="underline">ultrasonography</span> &nbsp; Prenatal Diagnostic test / Procedure. I do not want to know the sex of my foetus.</div>
-  <div class="sig-row" style="margin-top:8px">
+  <div class="sig-row" style="margin-top:4px">
     <div class="sig-date">Date : ${declarationDate}</div>
     <div style="text-align:center">
-      <div class="sig-line" style="width:180px">Signature / Thumb impression of the person<br>undergoing the prenatal Diagnostic Test/Procedure</div>
+      <div class="sig-line" style="width:160px;margin-top:8px">Signature / Thumb impression of the person<br>undergoing the prenatal Diagnostic Test/Procedure</div>
     </div>
   </div>
 </div>
 
 <!-- Gujarati declaration -->
-<div class="decl-gu">
+<div class="decl-gu" style="margin-top:2px;padding-top:2px">
   <span class="bold">પ્રિનેટલ ડાયગ્નોસ્ટીક ટેસ્ટ / પ્રોસીઝર કરાવનાર વ્યક્તિનો કબુલાત પત્ર</span><br>
   હું શ્રીમતિ <span style="border-bottom:1px solid #000;display:inline-block;min-width:160px;font-weight:bold">${p.name || ''}</span> આથી જાહેર કરૂં છું કે ગર્ભસ્થ બાળકની પ્રિનેટલ ડાયગ્નોસ્ટીક ટેસ્ટ / પ્રોસીઝર (સોનોગ્રાફી) તપાસ દરમ્યાન મારે મારા બાળક ની જાતિ (બાબો કે બેબી) જાણવી નથી.<br>
-  <div style="display:flex;justify-content:space-between;margin-top:4px">
+  <div style="display:flex;justify-content:space-between;margin-top:2px">
     <span>તારીખ : ${declarationDate}</span>
     <span style="border-top:1px solid #000;display:inline-block;min-width:180px;text-align:center;padding-top:2px">દર્દીની સહી અથવા અંગૂઠાનું નિશાન</span>
   </div>
 </div>
 
 ${sD.thumbImpression ? `
-<div class="thumb-section">
+<div class="thumb-section" style="padding:2px 4px;margin-top:2px">
   <div class="bold">In case of Thumb Impression :</div>
   <div class="field-row mt2">
     <span class="field-label">Identified by (Name)</span>
@@ -436,37 +434,37 @@ ${sD.thumbImpression ? `
   </div>
 </div>` : ''}
 
-<!-- Radiologist declaration -->
-<div class="declaration" style="margin-top:4px">
-  <span class="bold">DECLARATION OF THE PERSON UNDERGOING PRENATAL DIAGNOSTIC TEST / PROCEDURE</span><br>
-  I, <span style="border-bottom:1px solid #000;display:inline-block;min-width:140px;font-weight:bold">${val(sB.performedBy || sA.doctorName)}</span>
-  (name of the person conducting ultrasonography image / scanning) declare that while conducting ultrasonography/image Scanning on Ms./Mr.
-  <span style="border-bottom:1px solid #000;display:inline-block;min-width:140px;font-weight:bold">${val(p.name)}</span>
-  (name of the pregnant woman or the person undergoing pre-natal diagnostic procedure/test), I have neither detected nor disclosed sex of her fetus to anybody in any manner.
+<!-- Radiologist declaration (compact - no border box) -->
+<div style="border-top:1px solid #000;margin-top:1px;padding:1px 3px;font-size:6.5pt;line-height:1.2">
+  <span class="bold" style="font-size:6.5pt;text-transform:uppercase">Declaration of the Person Conducting Ultrasonography / Image Scanning</span>
+  <span> I, </span><span style="border-bottom:1px solid #000;display:inline-block;min-width:90px;font-weight:bold;font-size:7pt">${val(sB.performedBy || sA.doctorName)}</span>
+  <span style="font-size:6.5pt"> declare that while conducting ultrasonography/image Scanning on Ms./Mr. </span>
+  <span style="border-bottom:1px solid #000;display:inline-block;min-width:90px;font-weight:bold;font-size:7pt">${val(p.name)}</span>
+  <span style="font-size:6.5pt">, I have neither detected nor disclosed sex of her fetus to anybody in any manner.</span>
 </div>
 
 <!-- Final signatures -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;border-top:1px solid #000;padding-top:6px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:1px;border-top:1px solid #000;padding-top:2px">
   <div>
-    <div class="sig-date">Date : ${procedureDate}</div>
-    <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
+    <div class="sig-date" style="margin-bottom:0">Date : ${procedureDate}</div>
+    <div class="sig-date" style="margin-bottom:0">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
     <div style="text-align:center;margin-top:4px">
-      <div style="border:1px solid #000;width:60px;height:35px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+      <div style="border:1px solid #000;width:60px;height:28px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
       <div style="font-size:8pt;margin-top:2px;font-weight:bold">Radiologist</div>
     </div>
   </div>
   <div>
-    <div class="sig-date">Date : ${procedureDate}</div>
-    <div class="sig-date">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
+    <div class="sig-date" style="margin-bottom:0">Date : ${procedureDate}</div>
+    <div class="sig-date" style="margin-bottom:0">Place : ${clinicAddr ? clinicAddr.split(',')[0] : 'PATAN'}</div>
     <div style="text-align:center;margin-top:4px">
-      <div style="border:1px solid #000;width:60px;height:35px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
+      <div style="border:1px solid #000;width:60px;height:28px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7pt">SEAL</div>
       <div style="font-size:8pt;margin-top:2px;font-weight:bold">Radiologist</div>
     </div>
   </div>
 </div>
 
 <!-- Generated by note -->
-<div style="border-top:1px dashed #ccc;margin-top:6px;padding-top:4px;font-size:7.5pt;color:#555;display:flex;justify-content:space-between">
+<div style="border-top:1px dashed #ccc;margin-top:2px;padding-top:2px;font-size:6.5pt;color:#555;display:flex;justify-content:space-between">
   <span>MediRecord Smart EMR — Form F (PNDT) — ${form.formNumber || ''}</span>
   <span>Generated: ${new Date().toLocaleString('en-IN')}</span>
 </div>

@@ -23,6 +23,7 @@ function ImageUploadBox({ label, current, onUpload, hint }) {
       const data = new FormData()
       data.append('file', file)
       data.append('folder', '/medirecord/clinic')
+      data.append('label', label.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_-]/g,''))
       const r = await api.post('/upload', data, { headers: { 'Content-Type': 'multipart/form-data' } })
       setPreview(r.data.url)
       onUpload(r.data.url, r.data.fileId)
